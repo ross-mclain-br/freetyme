@@ -2,7 +2,7 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import Layout from "../components/layout";
+import Layout from "~/components/layout";
 
 import { JetBrains_Mono } from "next/font/google";
 
