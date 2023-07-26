@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState } from "react";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -6,15 +6,80 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/20/solid";
 import { Menu, Transition } from "@headlessui/react";
-import { format, startOfToday } from "date-fns";
+import { format, startOfToday, addWeeks } from "date-fns";
 import CalendarWeekView from "./calendarViews/week";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  color: string;
+  description: string;
+  location: string;
+  attendees: string[];
+}
+
 export const Calendar = () => {
   const today = startOfToday();
+  const [selectedCalendarView, setSelectedCalendarView] = useState<
+    "day" | "week" | "month" | "year"
+  >("week");
+  const lastCallback = useCallback(() => {
+    switch (selectedCalendarView) {
+      case "day":
+        break;
+      case "week":
+        setSelectedDate((prev) => addWeeks(prev, -1));
+        break;
+      case "month":
+        break;
+      case "year":
+        break;
+    }
+  }, [selectedCalendarView]);
+  const nextCallback = useCallback(() => {
+    switch (selectedCalendarView) {
+      case "day":
+        break;
+      case "week":
+        setSelectedDate((prev) => addWeeks(prev, 1));
+        break;
+      case "month":
+        break;
+      case "year":
+        break;
+    }
+  }, [selectedCalendarView]);
+
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+
+  const [events, setEvents] = useState<CalendarEvent[]>([
+    {
+      id: "1",
+      title: "Test Event",
+      start: new Date("2023-07-25T16:30:00"),
+      end: new Date("2023-07-25T18:45:00"),
+      color: "red",
+      description: "Test Event description",
+      location: "Test Location",
+      attendees: ["Test Attendee"],
+    },
+    {
+      id: "2",
+      title: "Test Event Overnight",
+      start: new Date("2023-07-27T19:30:00"),
+      end: new Date("2023-07-28T06:45:00"),
+      color: "red",
+      description: "Test Event description",
+      location: "Test Location",
+      attendees: ["Test Attendee"],
+    },
+  ]);
 
   return (
     <div className="flex h-full w-full flex-col text-secondary">
@@ -29,6 +94,7 @@ export const Calendar = () => {
               aria-hidden="true"
             />
             <button
+              onClick={lastCallback}
               type="button"
               className="flex items-center justify-center rounded-l-md py-2 pl-3 pr-4  transition-all duration-300 hover:text-primary focus:relative md:w-9 md:px-2 md:hover:bg-secondary"
             >
@@ -36,6 +102,7 @@ export const Calendar = () => {
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </button>
             <button
+              onClick={() => setSelectedDate(today)}
               type="button"
               className="hidden px-3.5 text-sm  transition-all duration-300 hover:bg-secondary hover:text-primary focus:relative md:block"
             >
@@ -43,8 +110,9 @@ export const Calendar = () => {
             </button>
             <span className="relative -mx-px h-5 w-px  md:hidden" />
             <button
+              onClick={nextCallback}
               type="button"
-              className="flex items-center justify-center rounded-r-md py-2 pl-4 pr-3  transition-all duration-300 hover:text-primary focus:relative md:w-9 md:px-2 md:hover:bg-secondary"
+              className="flex items-center justify-center rounded-r-md py-2 pl-4 pr-3 transition-all duration-300 hover:text-primary focus:relative md:w-9 md:px-2 md:hover:bg-secondary"
             >
               <span className="sr-only">Next week</span>
               <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
@@ -251,7 +319,11 @@ export const Calendar = () => {
           </Menu>
         </div>
       </header>
-      <CalendarWeekView />
+      <CalendarWeekView
+        selectedDay={selectedDate}
+        setSelectedDay={setSelectedDate}
+        events={events}
+      />
     </div>
   );
 };

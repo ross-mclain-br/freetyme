@@ -2,24 +2,48 @@ import {
   eachDayOfInterval,
   startOfWeek,
   endOfWeek,
-  startOfToday,
+  isEqual,
+  eachHourOfInterval,
+  startOfDay,
+  endOfDay,
+  differenceInMinutes,
 } from "date-fns";
 import { useEffect, useRef } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { format } from "date-fns";
+import { CalendarEvent } from "../calendar";
 
-export const CalendarWeekView = () => {
+export const CalendarWeekView = ({
+  selectedDay,
+  setSelectedDay,
+  events,
+}: {
+  selectedDay: Date;
+  setSelectedDay: Dispatch<SetStateAction<Date>>;
+  events: CalendarEvent[];
+}) => {
   const container = useRef<HTMLDivElement>(null);
   const containerNav = useRef<HTMLDivElement>(null);
   const containerOffset = useRef<HTMLDivElement>(null);
 
-  const today = startOfToday();
-  const weekDays = eachDayOfInterval({
-    start: startOfWeek(today),
-    end: endOfWeek(today),
+  const today = new Date();
+  const thisMorning = startOfDay(today);
+
+  const selectedMorning = startOfDay(selectedDay);
+  const selectedEvening = endOfDay(selectedDay);
+  const selectedHours = eachHourOfInterval({
+    start: selectedMorning,
+    end: selectedEvening,
   });
+  const weekDays = eachDayOfInterval({
+    start: startOfWeek(selectedMorning),
+    end: endOfWeek(selectedMorning),
+  });
+
+  const currentMinute = today.getHours() * 60;
 
   useEffect(() => {
     // Set the container scroll position based on the current time.
-    const currentMinute = new Date().getHours() * 60;
     if (
       container?.current &&
       containerNav?.current &&
@@ -33,6 +57,8 @@ export const CalendarWeekView = () => {
         1440;
     }
   }, []);
+
+  const rowHeight = 6;
   return (
     <div
       style={{ width: "165%" }}
@@ -47,129 +73,49 @@ export const CalendarWeekView = () => {
           className="sticky top-0 z-30 flex-none bg-tertiary/60 ring-1 ring-primary ring-opacity-5 sm:pr-8"
         >
           <div className="grid grid-cols-7 text-sm leading-6 text-secondary sm:hidden">
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              M{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                10
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              T{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                11
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              W{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-secondary">
-                12
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              T{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                13
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              F{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                14
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              S{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                15
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
-              S{" "}
-              <span className="mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary">
-                16
-              </span>
-            </button>
+            {weekDays.map((day) => (
+              <button
+                key={`week-day-button-${day.getDay()}`}
+                type="button"
+                className="flex flex-col items-center pb-3 pt-2"
+              >
+                {day.toLocaleDateString("en-US", { weekday: "short" })}
+                <span
+                  className={
+                    isEqual(day, thisMorning)
+                      ? `mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary`
+                      : `mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary`
+                  }
+                >
+                  {format(day, "d")}
+                </span>
+              </button>
+            ))}
           </div>
 
           <div className="font bold -mr-px hidden grid-cols-7 divide-x divide-secondary border-r border-secondary text-sm leading-6 text-secondary sm:grid">
             <div className="col-end-1 w-14" />
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Mon{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  10
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Tue{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  11
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span className="flex items-baseline">
-                Wed{" "}
-                <span className="ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary">
-                  12
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Thu{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  13
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Fri{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  14
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Sat{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  15
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center justify-center py-3">
-              <span>
-                Sun{" "}
-                <span className="items-center justify-center font-bold text-secondary">
-                  16
-                </span>
-              </span>
-            </div>
+            {weekDays.map((day) => (
+              <div
+                key={`week-day-button-${day.getDay()}`}
+                className="flex items-center justify-center py-3"
+              >
+                <div className="flex items-center">
+                  <span className="mr-1">
+                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                  </span>
+                  <span
+                    className={
+                      isEqual(day, thisMorning)
+                        ? `ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary`
+                        : `ml-1 flex h-8 w-8 items-center justify-center rounded-full font-bold text-secondary`
+                    }
+                  >
+                    {format(day, "d")}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         <div className="flex flex-auto">
@@ -181,162 +127,28 @@ export const CalendarWeekView = () => {
               style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}
             >
               <div ref={containerOffset} className="row-end-1 h-7"></div>
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  12AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  1AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  2AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  3AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  4AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  5AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  6AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  7AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  8AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  9AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  10AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  11AM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  12PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  1PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  2PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  3PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  4PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  5PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  6PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  7PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  8PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  9PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  10PM
-                </div>
-              </div>
-              <div />
-              <div>
-                <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                  11PM
-                </div>
-              </div>
-              <div />
+              {selectedHours.map((hour) => (
+                <>
+                  <div key={`hour-${hour.getHours()}`}>
+                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
+                      {format(hour, "ha")}
+                    </div>
+                  </div>
+                  <div key={`hour-extra-${hour.getHours()}`} />
+                </>
+              ))}
             </div>
 
             {/* Vertical lines */}
             <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-secondary sm:grid sm:grid-cols-7">
-              <div className="col-start-1 row-span-full" />
-              <div className="col-start-2 row-span-full" />
-              <div className="col-start-3 row-span-full" />
-              <div className="col-start-4 row-span-full" />
-              <div className="col-start-5 row-span-full" />
-              <div className="col-start-6 row-span-full" />
-              <div className="col-start-7 row-span-full" />
-              <div className="col-start-8 row-span-full w-8" />
+              <div className="row-span-full sm:col-start-1" />
+              <div className="row-span-full sm:col-start-2" />
+              <div className="row-span-full sm:col-start-3" />
+              <div className="row-span-full sm:col-start-4" />
+              <div className="row-span-full sm:col-start-5" />
+              <div className="row-span-full sm:col-start-6" />
+              <div className="row-span-full sm:col-start-7" />
+              <div className="row-span-full w-8 sm:col-start-8" />
             </div>
 
             {/* Events */}
@@ -346,50 +158,65 @@ export const CalendarWeekView = () => {
                 gridTemplateRows: "1.75rem repeat(288, minmax(0, 1fr)) auto",
               }}
             >
-              <li
-                className="relative mt-px flex sm:col-start-3"
-                style={{ gridRow: "74 / span 12" }}
-              >
-                <a
-                  href="#"
-                  className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
-                >
-                  <p className="order-1 text-blue-700">Breakfast</p>
-                  <p className="text-blue-500 group-hover:text-blue-700">
-                    <time dateTime="2022-01-12T06:00">6:00 AM</time>
-                  </p>
-                </a>
-              </li>
-              <li
-                className="relative mt-px flex sm:col-start-3"
-                style={{ gridRow: "92 / span 30" }}
-              >
-                <a
-                  href="#"
-                  className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-pink-50 p-2 text-xs leading-5 hover:bg-pink-100"
-                >
-                  <p className="order-1 text-pink-700">Flight to Paris</p>
-                  <p className="text-pink-500 group-hover:text-pink-700">
-                    <time dateTime="2022-01-12T07:30">7:30 AM</time>
-                  </p>
-                </a>
-              </li>
-              <li
-                className="relative mt-px hidden sm:col-start-6 sm:flex"
-                style={{ gridRow: "122 / span 24" }}
-              >
-                <a
-                  href="#"
-                  className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-gray-100 p-2 text-xs leading-5 hover:bg-gray-200"
-                >
-                  <p className="order-1 text-gray-700">
-                    Meeting with design team at Disney
-                  </p>
-                  <p className="text-gray-500 group-hover:text-gray-700">
-                    <time dateTime="2022-01-15T10:00">10:00 AM</time>
-                  </p>
-                </a>
-              </li>
+              {events.map((event) => {
+                const eventDurationDays = eachDayOfInterval({
+                  start: event.start,
+                  end: event.end,
+                });
+                console.log(eventDurationDays);
+
+                return eventDurationDays.map((day) => {
+                  console.log(day);
+                  const eventStart = isEqual(day, startOfDay(event.start))
+                    ? event.start
+                    : startOfDay(day);
+                  const startOfEventMorning = startOfDay(eventStart);
+                  const eventEnd = isEqual(day, startOfDay(event.end))
+                    ? event.end
+                    : endOfDay(day);
+
+                  const durationMinutes = differenceInMinutes(
+                    eventEnd,
+                    eventStart
+                  );
+                  const startingDurationMinutes = differenceInMinutes(
+                    eventStart,
+                    startOfEventMorning
+                  );
+
+                  const hoursRowHeight = Math.round(
+                    rowHeight * (durationMinutes / 30)
+                  );
+
+                  const startingRow = Math.round(
+                    rowHeight * (startingDurationMinutes / 30)
+                  );
+
+                  const dayIndex = day.getDay() + 1;
+
+                  return (
+                    <li
+                      key={`event-${event.id}-${day.getDay()}`}
+                      className={`relative mt-px flex sm:col-start-${dayIndex}`}
+                      style={{
+                        gridRow: `${2 + startingRow} / span ${hoursRowHeight}`,
+                      }}
+                    >
+                      <a
+                        href="#"
+                        className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+                      >
+                        <p className="order-1 text-blue-700">{event.title}</p>
+                        <p className="text-blue-500 group-hover:text-blue-700">
+                          <time dateTime={eventStart.toISOString()}>
+                            {format(eventStart, "h:mm a")}
+                          </time>
+                        </p>
+                      </a>
+                    </li>
+                  );
+                });
+              })}
             </ol>
           </div>
         </div>
