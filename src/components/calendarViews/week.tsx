@@ -84,11 +84,13 @@ export const CalendarWeekView = ({
               >
                 {day.toLocaleDateString("en-US", { weekday: "short" })}
                 <span
-                  className={
-                    isEqual(day, thisMorning)
-                      ? `mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary`
-                      : `mt-1 flex h-8 w-8 items-center justify-center font-bold text-secondary`
-                  }
+                  className={`mt-1 flex h-8 w-8 items-center justify-center rounded-full border ${
+                    isEqual(day, selectedDay)
+                      ? `bg-secondary text-primary`
+                      : isEqual(day, thisMorning)
+                      ? ` border-secondary text-secondary`
+                      : ` border-transparent text-secondary`
+                  }`}
                 >
                   {format(day, "d")}
                 </span>
@@ -99,7 +101,7 @@ export const CalendarWeekView = ({
           <div className="font bold -mr-px hidden grid-cols-7 divide-x divide-secondary border-r border-secondary text-sm leading-6 text-secondary sm:grid">
             <div className="col-end-1 w-14" />
             {weekDays.map((day) => (
-              <div
+              <button
                 key={`week-day-button-${day.getDay()}`}
                 className="flex items-center justify-center py-3"
               >
@@ -108,16 +110,18 @@ export const CalendarWeekView = ({
                     {day.toLocaleDateString("en-US", { weekday: "short" })}
                   </span>
                   <span
-                    className={
-                      isEqual(day, thisMorning)
-                        ? `ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary`
-                        : `ml-1 flex h-8 w-8 items-center justify-center rounded-full font-bold text-secondary`
-                    }
+                    className={`ml-1 flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 hover:bg-secondary hover:text-primary ${
+                      isEqual(day, selectedDay)
+                        ? `bg-secondary text-primary`
+                        : isEqual(day, thisMorning)
+                        ? ` border-secondary text-secondary`
+                        : ` border-transparent text-secondary`
+                    }`}
                   >
                     {format(day, "d")}
                   </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
