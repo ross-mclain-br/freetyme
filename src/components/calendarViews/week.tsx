@@ -7,11 +7,14 @@ import {
   startOfDay,
   endOfDay,
   differenceInMinutes,
+  isSameWeek,
+  isSameDay,
 } from "date-fns";
 import { useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { format } from "date-fns";
 import { CalendarEvent } from "../calendar";
+import { is } from "date-fns/locale";
 
 export const CalendarWeekView = ({
   selectedDay,
@@ -66,7 +69,7 @@ export const CalendarWeekView = ({
     >
       <div
         ref={container}
-        className="isolate flex max-h-[65vh] flex-auto flex-col overflow-y-scroll rounded-lg"
+        className="isolate flex max-h-[70vh] flex-auto flex-col overflow-y-auto rounded-lg"
       >
         <div
           ref={containerNav}
@@ -124,18 +127,15 @@ export const CalendarWeekView = ({
             {/* Horizontal lines */}
             <div
               className="col-start-1 col-end-2 row-start-1 grid divide-y divide-secondary"
-              style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}
+              style={{ gridTemplateRows: "repeat(24, minmax(1.75rem, 1fr))" }}
             >
               <div ref={containerOffset} className="row-end-1 h-7"></div>
               {selectedHours.map((hour) => (
-                <>
-                  <div key={`hour-${hour.getHours()}`}>
-                    <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
-                      {format(hour, "ha")}
-                    </div>
+                <div key={`hour-${hour.getHours()}`}>
+                  <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs font-bold leading-5 text-secondary">
+                    {format(hour, "ha")}
                   </div>
-                  <div key={`hour-extra-${hour.getHours()}`} />
-                </>
+                </div>
               ))}
             </div>
 
@@ -158,65 +158,111 @@ export const CalendarWeekView = ({
                 gridTemplateRows: "1.75rem repeat(288, minmax(0, 1fr)) auto",
               }}
             >
-              {events.map((event) => {
-                const eventDurationDays = eachDayOfInterval({
-                  start: event.start,
-                  end: event.end,
-                });
-                console.log(eventDurationDays);
+              {events
+                ?.filter(
+                  (event) =>
+                    isSameWeek(event?.start, selectedDay) ||
+                    isSameWeek(event?.end, selectedDay)
+                )
+                .map((event) => {
+                  const eventDurationDays = eachDayOfInterval({
+                    start: event.start,
+                    end: event.end,
+                  });
+                  console.log(eventDurationDays);
 
-                return eventDurationDays.map((day) => {
-                  console.log(day);
-                  const eventStart = isEqual(day, startOfDay(event.start))
-                    ? event.start
-                    : startOfDay(day);
-                  const startOfEventMorning = startOfDay(eventStart);
-                  const eventEnd = isEqual(day, startOfDay(event.end))
-                    ? event.end
-                    : endOfDay(day);
+                  return eventDurationDays.map((day) => {
+                    const isEventStartToday = isEqual(
+                      day,
+                      startOfDay(event.start)
+                    );
+                    const isEventEndToday = isEqual(day, startOfDay(event.end));
+                    const title = isEventStartToday
+                      ? event.title
+                      : `${event.title} (continued)`;
 
-                  const durationMinutes = differenceInMinutes(
-                    eventEnd,
-                    eventStart
-                  );
-                  const startingDurationMinutes = differenceInMinutes(
-                    eventStart,
-                    startOfEventMorning
-                  );
+                    const eventStart = isEventStartToday
+                      ? event.start
+                      : startOfDay(day);
+                    const startOfEventMorning = startOfDay(eventStart);
+                    const eventEnd = isEventEndToday
+                      ? event.end
+                      : endOfDay(day);
 
-                  const hoursRowHeight = Math.round(
-                    rowHeight * (durationMinutes / 30)
-                  );
+                    const eventDurationDisplay =
+                      isEventStartToday && isEventEndToday
+                        ? `${format(eventStart, "h:mm a")} - ${format(
+                            eventEnd,
+                            "h:mm a"
+                          )}`
+                        : isEventStartToday
+                        ? `${format(eventStart, "h:mm a")} ->`
+                        : isEventEndToday
+                        ? `-> ${format(eventEnd, "h:mm a")}`
+                        : "-> All Day ->";
 
-                  const startingRow = Math.round(
-                    rowHeight * (startingDurationMinutes / 30)
-                  );
+                    const durationMinutes = differenceInMinutes(
+                      eventEnd,
+                      eventStart
+                    );
+                    const startingDurationMinutes = differenceInMinutes(
+                      eventStart,
+                      startOfEventMorning
+                    );
 
-                  const dayIndex = day.getDay() + 1;
+                    const hoursRowHeight = Math.round(
+                      rowHeight * (durationMinutes / 30)
+                    );
 
-                  return (
-                    <li
-                      key={`event-${event.id}-${day.getDay()}`}
-                      className={`relative mt-px flex sm:col-start-${dayIndex}`}
-                      style={{
-                        gridRow: `${2 + startingRow} / span ${hoursRowHeight}`,
-                      }}
-                    >
-                      <a
-                        href="#"
-                        className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100"
+                    const startingRow = Math.round(
+                      rowHeight * (startingDurationMinutes / 30)
+                    );
+
+                    const dayIndex = day.getDay() + 1;
+
+                    return (
+                      <li
+                        key={`event-${event.id}-${day.getDay()}`}
+                        className={`relative mt-px flex sm:col-start-${dayIndex} ${
+                          isSameDay(eventStart, selectedDay) ||
+                          isSameDay(eventEnd, selectedDay)
+                            ? ""
+                            : "hidden sm:block"
+                        }`}
+                        style={{
+                          gridRow:
+                            isEventStartToday && isEventEndToday
+                              ? `${2 + startingRow} / span ${hoursRowHeight}`
+                              : isEventStartToday
+                              ? `${2 + startingRow} / span ${hoursRowHeight}`
+                              : isEventEndToday
+                              ? `1 / span ${hoursRowHeight}`
+                              : `1 / span ${hoursRowHeight}`,
+                        }}
                       >
-                        <p className="order-1 text-blue-700">{event.title}</p>
-                        <p className="text-blue-500 group-hover:text-blue-700">
-                          <time dateTime={eventStart.toISOString()}>
-                            {format(eventStart, "h:mm a")}
-                          </time>
-                        </p>
-                      </a>
-                    </li>
-                  );
-                });
-              })}
+                        <a
+                          href="#"
+                          className={`group absolute inset-1 flex flex-col overflow-y-auto ${
+                            isEventStartToday && isEventEndToday
+                              ? "rounded-lg"
+                              : isEventStartToday
+                              ? "rounded-t-lg"
+                              : isEventEndToday
+                              ? "rounded-b-lg"
+                              : ""
+                          } bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100`}
+                        >
+                          <p className="order-1 text-blue-700">{title}</p>
+                          <p className="text-blue-500 group-hover:text-blue-700">
+                            <time dateTime={eventStart.toISOString()}>
+                              {eventDurationDisplay}
+                            </time>
+                          </p>
+                        </a>
+                      </li>
+                    );
+                  });
+                })}
             </ol>
           </div>
         </div>
