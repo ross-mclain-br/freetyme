@@ -19,10 +19,12 @@ import { is } from "date-fns/locale";
 export const CalendarWeekView = ({
   selectedDay,
   setSelectedDay,
+  selectedWeek,
   events,
 }: {
   selectedDay: Date;
   setSelectedDay: Dispatch<SetStateAction<Date>>;
+  selectedWeek: Date;
   events: CalendarEvent[];
 }) => {
   const container = useRef<HTMLDivElement>(null);
@@ -39,8 +41,8 @@ export const CalendarWeekView = ({
     end: selectedEvening,
   });
   const weekDays = eachDayOfInterval({
-    start: startOfWeek(selectedMorning),
-    end: endOfWeek(selectedMorning),
+    start: startOfWeek(selectedWeek),
+    end: endOfWeek(selectedWeek),
   });
 
   const currentMinute = today.getHours() * 60;
@@ -59,7 +61,7 @@ export const CalendarWeekView = ({
           currentMinute) /
         1440;
     }
-  }, []);
+  }, [currentMinute]);
 
   const rowHeight = 6;
   return (
@@ -88,8 +90,8 @@ export const CalendarWeekView = ({
                     isEqual(day, selectedDay)
                       ? `bg-secondary text-primary`
                       : isEqual(day, thisMorning)
-                      ? ` border-secondary text-secondary`
-                      : ` border-transparent text-secondary`
+                      ? `border-secondary text-secondary`
+                      : `border-transparent text-secondary`
                   }`}
                 >
                   {format(day, "d")}
@@ -110,6 +112,7 @@ export const CalendarWeekView = ({
                     {day.toLocaleDateString("en-US", { weekday: "short" })}
                   </span>
                   <span
+                    onClick={() => setSelectedDay(day)}
                     className={`ml-1 flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 hover:bg-secondary hover:text-primary ${
                       isEqual(day, selectedDay)
                         ? `bg-secondary text-primary`
@@ -173,7 +176,6 @@ export const CalendarWeekView = ({
                     start: event.start,
                     end: event.end,
                   });
-                  console.log(eventDurationDays);
 
                   return eventDurationDays.map((day) => {
                     const isEventStartToday = isEqual(
