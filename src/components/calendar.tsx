@@ -346,6 +346,7 @@ export const Calendar = () => {
       <UpsertEventModal
         open={showUpsertEventModal}
         setOpen={setShowUpsertEventModal}
+        selectedDay={selectedDate}
       />
     </>
   );

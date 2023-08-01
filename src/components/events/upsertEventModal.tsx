@@ -103,7 +103,7 @@ export const UpsertEventModal = ({
                                   />
                                 </div>
                               </div>
-                              <div className="col-span-full">
+                              <div className="divide-b col-span-full">
                                 <label
                                   htmlFor="description"
                                   className="block text-sm font-medium leading-6"
@@ -120,6 +120,7 @@ export const UpsertEventModal = ({
                                   />
                                 </div>
                               </div>
+
                               <div className="sm:col-span-3">
                                 <label
                                   htmlFor="first-name"
