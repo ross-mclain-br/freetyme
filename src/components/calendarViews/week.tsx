@@ -76,6 +76,7 @@ export const CalendarWeekView = ({
         description: "",
         ownerId: recurringEvent.userId,
         color: recurringEvent.type.color,
+        textColor: recurringEvent.type.textColor,
         start: startDate,
         end: endDate,
         typeId: recurringEvent.typeId,
@@ -301,8 +302,16 @@ export const CalendarWeekView = ({
                           } p-2 text-xs leading-5 hover:bg-blue-100`}
                           style={{ backgroundColor: event.color }}
                         >
-                          <p className="order-1 text-blue-700">{title}</p>
-                          <p className="text-blue-500 group-hover:text-blue-700">
+                          <p
+                            style={{ color: event?.textColor ?? "white" }}
+                            className="order-1"
+                          >
+                            {title}
+                          </p>
+                          <p
+                            style={{ color: event?.textColor ?? "white" }}
+                            className=" group-hover:text-blue-700"
+                          >
                             <time dateTime={eventStart.toISOString()}>
                               {eventDurationDisplay}
                             </time>

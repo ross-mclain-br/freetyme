@@ -7,17 +7,28 @@ export const Controller = ({ children }: { children: ReactElement }) => {
 
   const { user, isSignedIn, isLoaded } = useUser();
 
-  const { data: userData } = api.user.getUserByExternalId.useQuery(
-    {
-      externalUserId: user?.id ?? "",
-    },
-    {
-      enabled: !!user?.id,
-    }
-  );
+  const {
+    data: userData,
+    isSuccess: userDataSuccess,
+    refetch: refetchUserData,
+  } = api.user.getUserByExternalId.useQuery({
+    externalUserId: user?.id ?? "",
+  });
 
   useEffect(() => {
-    if (!userData?.id && user?.id && isSignedIn && isLoaded) {
+    if (user?.id && isSignedIn && isLoaded && !userDataSuccess) {
+      void refetchUserData();
+    }
+  }, [user, isLoaded, isSignedIn, userDataSuccess, refetchUserData]);
+
+  useEffect(() => {
+    if (
+      !userData?.id &&
+      user?.id &&
+      isSignedIn &&
+      isLoaded &&
+      userDataSuccess
+    ) {
       console.warn("Upserting User!");
       userMutation({
         externalId: user.id,
@@ -31,7 +42,7 @@ export const Controller = ({ children }: { children: ReactElement }) => {
         })),
       });
     }
-  }, [userData, user, isSignedIn, isLoaded, userMutation]);
+  }, [userData, user, isSignedIn, isLoaded, userMutation, userDataSuccess]);
 
   return children;
 };
