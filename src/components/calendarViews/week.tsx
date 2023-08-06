@@ -13,19 +13,18 @@ import {
 import { useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { format } from "date-fns";
-import { CalendarEvent } from "../calendar";
-import { is } from "date-fns/locale";
+import type { RouterOutputs } from "~/utils/api";
 
 export const CalendarWeekView = ({
   selectedDay,
   setSelectedDay,
   selectedWeek,
-  events,
+  userEvents,
 }: {
   selectedDay: Date;
   setSelectedDay: Dispatch<SetStateAction<Date>>;
   selectedWeek: Date;
-  events: CalendarEvent[];
+  userEvents: RouterOutputs["event"]["getEventsByUserId"];
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const containerNav = useRef<HTMLDivElement>(null);
@@ -47,6 +46,8 @@ export const CalendarWeekView = ({
 
   const currentMinute = today.getHours() * 60;
 
+  const events = userEvents?.map((userEvent) => userEvent.event);
+
   useEffect(() => {
     // Set the container scroll position based on the current time.
     if (
@@ -67,7 +68,7 @@ export const CalendarWeekView = ({
   return (
     <div
       style={{ width: "165%" }}
-      className="flex max-w-full flex-none flex-col bg-tertiary/40 sm:max-w-none md:max-w-full"
+      className="flex max-w-full flex-none flex-col rounded-lg bg-tertiary/40 sm:max-w-none md:max-w-full"
     >
       <div
         ref={container}
@@ -168,8 +169,8 @@ export const CalendarWeekView = ({
               {events
                 ?.filter(
                   (event) =>
-                    isSameWeek(event?.start, selectedDay) ||
-                    isSameWeek(event?.end, selectedDay)
+                    isSameWeek(event?.start, selectedWeek) ||
+                    isSameWeek(event?.end, selectedWeek)
                 )
                 .map((event) => {
                   const eventDurationDays = eachDayOfInterval({

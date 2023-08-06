@@ -10,23 +10,35 @@ import { format, startOfToday, addWeeks, startOfWeek, set } from "date-fns";
 import CalendarWeekView from "./calendarViews/week";
 import { capitalize } from "../utils/util";
 import UpsertEventModal from "./events/upsertEventModal";
+import { RouterOutputs, api } from "~/utils/api";
+import type { Event } from "@prisma/client";
+import { useUser } from "@clerk/nextjs";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  color: string;
-  description: string;
-  location: string;
-  attendees: string[];
-}
-
 export const Calendar = () => {
+  const { user, isSignedIn, isLoaded } = useUser();
+
+  const { data: userData } = api.user.getUserByExternalId.useQuery(
+    {
+      externalUserId: user?.id ?? "",
+    },
+    {
+      enabled: !!user?.id,
+    }
+  );
+
+  const { data: eventsData } = api.event.getEventsByUserId.useQuery(
+    {
+      userId: userData?.id ?? 0,
+    },
+    {
+      enabled: !!userData?.id,
+    }
+  );
+
   const today = startOfToday();
 
   const [showUpsertEventModal, setShowUpsertEventModal] =
@@ -63,33 +75,14 @@ export const Calendar = () => {
     }
   }, [selectedCalendarView]);
 
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    {
-      id: "1",
-      title: "Test Event",
-      start: new Date("2023-07-25T16:30:00"),
-      end: new Date("2023-07-25T18:45:00"),
-      color: "red",
-      description: "Test Event description",
-      location: "Test Location",
-      attendees: ["Test Attendee"],
-    },
-    {
-      id: "2",
-      title: "Test Event Overnight",
-      start: new Date("2023-07-27T19:30:00"),
-      end: new Date("2023-07-28T06:45:00"),
-      color: "red",
-      description: "Test Event description",
-      location: "Test Location",
-      attendees: ["Test Attendee"],
-    },
-  ]);
+  // const events = api.events.getEventsByUser.useQuery({
+  //   externalId: user?.id ?? "",
+  // });
 
   return (
     <>
-      <div className="flex h-full w-full flex-col text-secondary">
-        <header className="flex flex-none items-center justify-between px-6 py-4">
+      <div className="flex h-full w-full flex-col rounded-lg text-secondary">
+        <header className="flex flex-none items-center justify-between px-6 py-4 ">
           <h1 className="text-base leading-6 text-secondary">
             <time dateTime="2022-01">{format(today, "MMMM yyyy")}</time>
           </h1>
@@ -339,7 +332,7 @@ export const Calendar = () => {
           selectedDay={selectedDate}
           setSelectedDay={setSelectedDate}
           selectedWeek={selectedWeek}
-          events={events}
+          userEvents={eventsData ?? []}
         />
       </div>
 

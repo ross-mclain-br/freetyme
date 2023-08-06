@@ -2,25 +2,151 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
-    relationMode = "prisma"    
-}
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    email     String   @unique
-    name      String?
+  id                  Int                   @id @default(autoincrement())
+  externalId          String                @unique
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  emailAddress        String                @unique
+  firstName           String?
+  lastName            String?
+  avatar              String?
+  identities          UserIdentities[]
+  UserEvents          UserEvents[]
+  UserRecurringEvents UserRecurringEvents[]
+  Event               Event[]
+  UserGroup           UserGroup[]
+  Group               Group[]
+
+  @@index([externalId])
+}
+
+model UserRecurringEvents {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  typeId    Int
+  type      EventType @relation(fields: [typeId], references: [id])
+  startHour Int
+  startMin  Int
+  endHour   Int
+  endMin    Int
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([typeId])
+  @@index([userId])
+}
+
+model UserIdentities {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     Int
+  provider   String
+  providerId String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([provider, userId])
+  @@index([userId])
+}
+
+model UserEvents {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  eventId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  title       String
+  description String?
+  start       DateTime
+  end         DateTime
+  color       String
+  location    String
+  image       String?
+  typeId      Int
+  type        EventType @relation(fields: [typeId], references: [id])
+  ownerId     Int
+  owner       User      @relation(fields: [ownerId], references: [id])
+
+  users       UserEvents[]
+  GroupEvents GroupEvents[]
+
+  @@index([ownerId])
+  @@index([typeId])
+}
+
+model EventType {
+  id              Int                   @id @default(autoincrement())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  name            String
+  code            String
+  color           String
+  image           String?
+  events          Event[]
+  recurringEvents UserRecurringEvents[]
+}
+
+model UserGroup {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  groupId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  group     Group    @relation(fields: [groupId], references: [id])
+
+  @@index([userId])
+  @@index([groupId])
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  image       String?
+  color       String
+  ownerId     Int
+  owner       User     @relation(fields: [ownerId], references: [id])
+
+  users       UserGroup[]
+  GroupEvents GroupEvents[]
+
+  @@index([ownerId])
+}
+
+model GroupEvents {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  groupId   Int
+  eventId   Int
+  group     Group    @relation(fields: [groupId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  @@index([groupId])
+  @@index([eventId])
 }

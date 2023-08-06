@@ -1,10 +1,7 @@
-import { UserButton } from "@clerk/nextjs";
 import Calendar from "~/components/calendar";
-import { api } from "~/utils/api";
+import { UserPreferences } from "../components/user/userPreferences";
 
 export default function Home() {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
   return (
     <div className=" flex flex-col  gap-12 px-4 py-24 ">
       <div className="flex justify-center">
@@ -17,8 +14,13 @@ export default function Home() {
         />
       </div>
 
-      <div className="mx-auto flex  w-full max-w-7xl flex-col items-center">
-        <Calendar />
+      <div className="flex w-full justify-center gap-x-4">
+        <div className="flex w-full max-w-7xl flex-col">
+          <Calendar />
+        </div>
+        <div className="mt-[3.4rem] flex w-full max-w-md flex-col py-4">
+          <UserPreferences />
+        </div>
       </div>
     </div>
   );
