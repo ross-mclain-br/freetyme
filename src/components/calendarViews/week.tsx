@@ -9,22 +9,28 @@ import {
   differenceInMinutes,
   isSameWeek,
   isSameDay,
+  addHours,
+  addMinutes,
+  addDays,
 } from "date-fns";
 import { useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { format } from "date-fns";
 import type { RouterOutputs } from "~/utils/api";
+import { Router } from "next/router";
 
 export const CalendarWeekView = ({
   selectedDay,
   setSelectedDay,
   selectedWeek,
   userEvents,
+  userRecurringEvents,
 }: {
   selectedDay: Date;
   setSelectedDay: Dispatch<SetStateAction<Date>>;
   selectedWeek: Date;
   userEvents: RouterOutputs["event"]["getEventsByUserId"];
+  userRecurringEvents: RouterOutputs["recurringEvent"]["getRecurringEventsByUserId"];
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const containerNav = useRef<HTMLDivElement>(null);
@@ -47,6 +53,41 @@ export const CalendarWeekView = ({
   const currentMinute = today.getHours() * 60;
 
   const events = userEvents?.map((userEvent) => userEvent.event);
+  for (const recurringEvent of userRecurringEvents ?? []) {
+    // create events for all visible days that span the time of the recurring event.
+    const recurringEventOverlaps =
+      recurringEvent?.startHour > recurringEvent?.endHour;
+
+    for (const day of weekDays) {
+      let startDate = addMinutes(
+        addHours(new Date(day), recurringEvent.startHour),
+        recurringEvent.startMin
+      );
+      if (recurringEventOverlaps) {
+        startDate = addDays(startDate, -1);
+      }
+      const endDate = addMinutes(
+        addHours(new Date(day), recurringEvent.endHour),
+        recurringEvent.endMin
+      );
+      const event: RouterOutputs["event"]["getEventsByUserId"][0]["event"] = {
+        id: recurringEvent.id,
+        title: recurringEvent.type.name,
+        description: "",
+        ownerId: recurringEvent.userId,
+        color: recurringEvent.type.color,
+        start: startDate,
+        end: endDate,
+        typeId: recurringEvent.typeId,
+        createdAt: recurringEvent.createdAt,
+        updatedAt: recurringEvent.updatedAt,
+        image: recurringEvent.type.image,
+        location: "",
+      };
+      events.push(event);
+    }
+    // Then loop over all the events and render them.
+  }
 
   useEffect(() => {
     // Set the container scroll position based on the current time.
@@ -257,7 +298,8 @@ export const CalendarWeekView = ({
                               : isEventEndToday
                               ? "rounded-b-lg"
                               : ""
-                          } bg-blue-50 p-2 text-xs leading-5 hover:bg-blue-100`}
+                          } p-2 text-xs leading-5 hover:bg-blue-100`}
+                          style={{ backgroundColor: event.color }}
                         >
                           <p className="order-1 text-blue-700">{title}</p>
                           <p className="text-blue-500 group-hover:text-blue-700">

@@ -39,6 +39,16 @@ export const Calendar = () => {
     }
   );
 
+  const { data: recurringEventsData } =
+    api.recurringEvent.getRecurringEventsByUserId.useQuery(
+      {
+        userId: userData?.id ?? 0,
+      },
+      {
+        enabled: !!userData?.id,
+      }
+    );
+
   const today = startOfToday();
 
   const [showUpsertEventModal, setShowUpsertEventModal] =
@@ -333,6 +343,7 @@ export const Calendar = () => {
           setSelectedDay={setSelectedDate}
           selectedWeek={selectedWeek}
           userEvents={eventsData ?? []}
+          userRecurringEvents={recurringEventsData ?? []}
         />
       </div>
 

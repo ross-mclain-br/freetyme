@@ -1,8 +1,9 @@
 import { useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
+import { parseRecurringEventDuration } from "~/utils/util";
 
 export const UserPreferences = () => {
-  const { user, isSignedIn, isLoaded } = useUser();
+  const { user } = useUser();
 
   const { data: userData } = api.user.getUserByExternalId.useQuery(
     {
@@ -31,6 +32,9 @@ export const UserPreferences = () => {
     (event) => event.type.code === "work"
   );
 
+  const sleepDuration = parseRecurringEventDuration(sleepData);
+  const workDuration = parseRecurringEventDuration(workData);
+
   return (
     <div className="rounded-lg bg-tertiary/40 text-secondary">
       <header className="flex h-[56px] items-center rounded-t-lg bg-tertiary/60 px-3">
@@ -44,10 +48,7 @@ export const UserPreferences = () => {
                 Sleep
               </label>
               <div className="flex items-center gap-x-2">
-                <h3>
-                  {sleepData.startHour}:{sleepData.startMin} -{" "}
-                  {sleepData.endHour}:{sleepData.endMin}
-                </h3>
+                <h3>{sleepDuration}</h3>
               </div>
             </div>
           )}
@@ -57,10 +58,7 @@ export const UserPreferences = () => {
                 Work
               </label>
               <div className="flex items-center gap-x-2">
-                <h3>
-                  {workData.startHour}:{workData.startMin} - {workData.endHour}:
-                  {workData.endMin}
-                </h3>
+                <h3>{workDuration}</h3>
               </div>
             </div>
           )}
