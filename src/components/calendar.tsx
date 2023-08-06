@@ -13,6 +13,7 @@ import UpsertEventModal from "./events/upsertEventModal";
 import { RouterOutputs, api } from "~/utils/api";
 import type { Event } from "@prisma/client";
 import { useUser } from "@clerk/nextjs";
+import UserPreferencesModal from "./user/userPreferencesModal";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -53,6 +54,8 @@ export const Calendar = () => {
 
   const [showUpsertEventModal, setShowUpsertEventModal] =
     useState<boolean>(false);
+  const [showUserPreferencesModal, setUserPreferencesModal] =
+    useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [selectedWeek, setSelectedWeek] = useState<Date>(startOfWeek(today));
   const [selectedCalendarView, setSelectedCalendarView] = useState<
@@ -92,20 +95,29 @@ export const Calendar = () => {
   return (
     <>
       <div className="flex h-full w-full flex-col rounded-lg text-secondary">
-        <header className="flex flex-none items-center justify-between px-6 py-4 ">
+        <header className="flex flex-none items-center justify-between py-4 ">
           <h1 className="text-base leading-6 text-secondary">
             <time dateTime="2022-01">{format(today, "MMMM yyyy")}</time>
           </h1>
           <div className="flex items-center">
-            <div className="relative flex items-center rounded-md bg-transparent shadow-sm md:items-stretch">
+            <div className="relative flex items-center rounded-md bg-transparent md:items-stretch">
+              <button
+                onClick={() => setUserPreferencesModal(true)}
+                type="button"
+                className="hidden rounded-md px-3.5 py-2 text-sm ring-1 ring-inset ring-secondary transition-all duration-300 hover:border-tertiary  hover:bg-tertiary  hover:text-secondary hover:ring-tertiary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary md:block"
+              >
+                Preferences
+              </button>
+            </div>
+            <div className="group relative ml-6 flex items-center rounded-md bg-transparent shadow-sm md:items-stretch">
               <div
-                className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-inset ring-secondary"
+                className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-inset ring-secondary "
                 aria-hidden="true"
               />
               <button
                 onClick={lastCallback}
                 type="button"
-                className="flex items-center justify-center rounded-l-md py-2 pl-3 pr-4  transition-all duration-300 hover:text-primary focus:relative md:w-9 md:px-2 md:hover:bg-secondary"
+                className="flex items-center justify-center rounded-l-md py-2 pl-3 pr-4  transition-all duration-300 hover:border-tertiary  hover:bg-tertiary  hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary md:w-9 md:px-2"
               >
                 <span className="sr-only">Previous week</span>
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -113,7 +125,7 @@ export const Calendar = () => {
               <button
                 onClick={() => setSelectedWeek(startOfWeek(today))}
                 type="button"
-                className="hidden px-3.5 text-sm  transition-all duration-300 hover:bg-secondary hover:text-primary focus:relative md:block"
+                className="hidden px-3.5 text-sm  transition-all duration-300 hover:border-tertiary  hover:bg-tertiary  hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary md:block"
               >
                 Today
               </button>
@@ -121,14 +133,14 @@ export const Calendar = () => {
               <button
                 onClick={nextCallback}
                 type="button"
-                className="flex items-center justify-center rounded-r-md py-2 pl-4 pr-3 transition-all duration-300 hover:text-primary focus:relative md:w-9 md:px-2 md:hover:bg-secondary"
+                className="flex items-center justify-center rounded-r-md py-2 pl-4 pr-3 transition-all duration-300 hover:border-tertiary  hover:bg-tertiary  hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary md:w-9 md:px-2"
               >
                 <span className="sr-only">Next week</span>
                 <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
-            <div className="hidden md:ml-4 md:flex md:items-center">
-              <Menu as="div" className="relative">
+            <div className="hidden md:flex md:items-center">
+              {/* <Menu as="div" className="relative">
                 <Menu.Button
                   type="button"
                   className="flex items-center gap-x-1.5 rounded-md bg-secondary px-3 py-2 text-sm text-primary shadow-sm ring-1 ring-inset ring-secondary transition-all duration-300 hover:bg-secondary"
@@ -200,7 +212,6 @@ export const Calendar = () => {
                         <button
                           onClick={() => {
                             setSelectedCalendarView("year");
-                            console.log(selectedCalendarView);
                           }}
                           className={classNames(
                             selectedCalendarView === "year"
@@ -215,7 +226,7 @@ export const Calendar = () => {
                     </div>
                   </Menu.Items>
                 </Transition>
-              </Menu>
+              </Menu> */}
               <div className="ml-6 h-6 w-px bg-secondary" />
               <button
                 type="button"
@@ -249,6 +260,7 @@ export const Calendar = () => {
                       {({ active }) => (
                         <a
                           href="#"
+                          onClick={() => setShowUpsertEventModal(true)}
                           className={classNames(
                             active
                               ? "bg-primary text-secondary"
@@ -265,13 +277,26 @@ export const Calendar = () => {
                     <Menu.Item>
                       <a
                         href="#"
+                        onClick={() => setSelectedWeek(startOfWeek(today))}
                         className={"block px-4 py-2 text-sm text-primary"}
                       >
                         Go to today
                       </a>
                     </Menu.Item>
                   </div>
+
                   <div className="py-1">
+                    <Menu.Item>
+                      <a
+                        href="#"
+                        onClick={() => setUserPreferencesModal(true)}
+                        className={"block px-4 py-2 text-sm text-primary"}
+                      >
+                        User Preferences
+                      </a>
+                    </Menu.Item>
+                  </div>
+                  {/* <div className="py-1">
                     <Menu.Item>
                       <button
                         onClick={() => {
@@ -332,7 +357,7 @@ export const Calendar = () => {
                         Year view
                       </button>
                     </Menu.Item>
-                  </div>
+                  </div> */}
                 </Menu.Items>
               </Transition>
             </Menu>
@@ -351,6 +376,11 @@ export const Calendar = () => {
         open={showUpsertEventModal}
         setOpen={setShowUpsertEventModal}
         selectedDay={selectedDate}
+      />
+
+      <UserPreferencesModal
+        open={showUserPreferencesModal}
+        setOpen={setUserPreferencesModal}
       />
     </>
   );
