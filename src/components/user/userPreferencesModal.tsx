@@ -110,7 +110,13 @@ export const UserPreferencesModal = ({
                                         {sleepDuration ?? "00:00 AM - 00:00 PM"}
                                       </h3>
                                     ) : (
-                                      <h3></h3>
+                                      <h3 className="flex items-center space-x-2">
+                                        <span>00:00</span>
+                                        <span>AM</span>
+                                        <span>-</span>
+                                        <span>00:00</span>
+                                        <span>PM</span>
+                                      </h3>
                                     )}
                                     {!editingSleep ? (
                                       <div
@@ -189,7 +195,13 @@ export const UserPreferencesModal = ({
                                         {workDuration ?? "00:00 AM - 00:00 PM"}
                                       </h3>
                                     ) : (
-                                      <h3></h3>
+                                      <h3 className="flex items-center space-x-2">
+                                        <span>00:00</span>
+                                        <span>AM</span>
+                                        <span>-</span>
+                                        <span>00:00</span>
+                                        <span>PM</span>
+                                      </h3>
                                     )}
 
                                     {!editingWork ? (
