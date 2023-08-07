@@ -59,6 +59,30 @@ export const CalendarWeekView = ({
       recurringEvent?.startHour > recurringEvent?.endHour;
 
     for (const day of weekDays) {
+      switch (day.getDay()) {
+        case 0:
+          if (!recurringEvent.isOnSunday) continue;
+          break;
+        case 1:
+          if (!recurringEvent.isOnMonday) continue;
+          break;
+        case 2:
+          if (!recurringEvent.isOnTuesday) continue;
+          break;
+        case 3:
+          if (!recurringEvent.isOnWednesday) continue;
+          break;
+        case 4:
+          if (!recurringEvent.isOnThursday) continue;
+          break;
+        case 5:
+          if (!recurringEvent.isOnFriday) continue;
+          break;
+        case 6:
+          if (!recurringEvent.isOnSaturday) continue;
+          break;
+      }
+
       let startDate = addMinutes(
         addHours(new Date(day), recurringEvent.startHour),
         recurringEvent.startMin
@@ -299,7 +323,7 @@ export const CalendarWeekView = ({
                               : isEventEndToday
                               ? "rounded-b-lg"
                               : ""
-                          } p-2 text-xs leading-5 hover:bg-blue-100`}
+                          } p-2 text-xs leading-5 hover:bg-primary/70`}
                           style={{ backgroundColor: event.color }}
                         >
                           <p
@@ -310,7 +334,7 @@ export const CalendarWeekView = ({
                           </p>
                           <p
                             style={{ color: event?.textColor ?? "white" }}
-                            className=" group-hover:text-blue-700"
+                            className=" group-hover:text-secondary"
                           >
                             <time dateTime={eventStart.toISOString()}>
                               {eventDurationDisplay}

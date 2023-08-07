@@ -31,17 +31,24 @@ model User {
 }
 
 model UserRecurringEvents {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  typeId    Int
-  type      EventType @relation(fields: [typeId], references: [id])
-  startHour Int
-  startMin  Int
-  endHour   Int
-  endMin    Int
-  userId    Int
-  user      User      @relation(fields: [userId], references: [id])
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  typeId        Int
+  type          EventType @relation(fields: [typeId], references: [id])
+  startHour     Int
+  startMin      Int
+  endHour       Int
+  endMin        Int
+  isOnSunday    Boolean
+  isOnMonday    Boolean
+  isOnTuesday   Boolean
+  isOnWednesday Boolean
+  isOnThursday  Boolean
+  isOnFriday    Boolean
+  isOnSaturday  Boolean
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
 
   @@index([typeId])
   @@index([userId])

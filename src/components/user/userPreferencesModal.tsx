@@ -5,6 +5,8 @@ import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import { parseRecurringEventDuration } from "~/utils/util";
+import { TimePicker } from "antd";
+import dayjs from "dayjs";
 export const UserPreferencesModal = ({
   open,
   setOpen,
@@ -14,6 +16,13 @@ export const UserPreferencesModal = ({
 }) => {
   const [editingSleep, setEditingSleep] = useState(false);
   const [editingWork, setEditingWork] = useState(false);
+
+  const [sleepStart, setSleepStart] = useState<string | undefined>(undefined);
+  const [sleepEnd, setSleepEnd] = useState<string | undefined>(undefined);
+
+  const [workStart, setWorkStart] = useState<string | undefined>(undefined);
+  const [workEnd, setWorkEnd] = useState<string | undefined>(undefined);
+
   const { user } = useUser();
 
   const { data: userData } = api.user.getUserByExternalId.useQuery(
@@ -111,17 +120,79 @@ export const UserPreferencesModal = ({
                                       </h3>
                                     ) : (
                                       <h3 className="flex items-center space-x-2">
-                                        <span>00:00</span>
-                                        <span>AM</span>
+                                        <TimePicker
+                                          name="sleep-start-time"
+                                          use12Hours
+                                          defaultValue={
+                                            sleepData
+                                              ? dayjs(
+                                                  `${String(
+                                                    sleepData.startHour
+                                                  ).padStart(2, "0")}:${String(
+                                                    sleepData.startMin
+                                                  ).padStart(2, "0")} ${
+                                                    sleepData.startHour < 12
+                                                      ? "AM"
+                                                      : "PM"
+                                                  }`,
+                                                  "hh:mm A"
+                                                )
+                                              : undefined
+                                          }
+                                          onChange={(time) => {
+                                            setSleepStart(
+                                              dayjs(time, "hh:mm A").format(
+                                                "hh:mm A"
+                                              )
+                                            );
+                                          }}
+                                          placeholder="Start"
+                                          format={"hh:mm A"}
+                                          suffixIcon={null}
+                                          allowClear={false}
+                                        />
                                         <span>-</span>
-                                        <span>00:00</span>
-                                        <span>PM</span>
+                                        <TimePicker
+                                          name="sleep-end-time"
+                                          use12Hours
+                                          format={"hh:mm A"}
+                                          suffixIcon={null}
+                                          allowClear={false}
+                                          onChange={(time) => {
+                                            setSleepEnd(
+                                              dayjs(time, "hh:mm A").format(
+                                                "hh:mm A"
+                                              )
+                                            );
+                                          }}
+                                          placeholder="End"
+                                          defaultValue={
+                                            sleepData
+                                              ? dayjs(
+                                                  `${String(
+                                                    sleepData.endHour
+                                                  ).padStart(2, "0")}:${String(
+                                                    sleepData.endMin
+                                                  ).padStart(2, "0")} ${
+                                                    sleepData.endHour < 12
+                                                      ? "AM"
+                                                      : "PM"
+                                                  }`,
+                                                  "hh:mm A"
+                                                )
+                                              : undefined
+                                          }
+                                        />
                                       </h3>
                                     )}
                                     {!editingSleep ? (
                                       <div
                                         className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
-                                        onClick={() => setEditingSleep(true)}
+                                        onClick={() => {
+                                          setSleepStart(undefined);
+                                          setSleepEnd(undefined);
+                                          setEditingSleep(true);
+                                        }}
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -142,7 +213,11 @@ export const UserPreferencesModal = ({
                                       <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => setEditingSleep(false)}
+                                          onClick={() => {
+                                            setSleepStart(undefined);
+                                            setSleepEnd(undefined);
+                                            setEditingSleep(false);
+                                          }}
                                         >
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -161,7 +236,13 @@ export const UserPreferencesModal = ({
                                         </div>
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => setEditingSleep(false)}
+                                          onClick={() => {
+                                            //TODO: mutate
+                                            //hide and reset
+                                            setSleepStart(undefined);
+                                            setSleepEnd(undefined);
+                                            setEditingSleep(false);
+                                          }}
                                         >
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -196,18 +277,80 @@ export const UserPreferencesModal = ({
                                       </h3>
                                     ) : (
                                       <h3 className="flex items-center space-x-2">
-                                        <span>00:00</span>
-                                        <span>AM</span>
+                                        <TimePicker
+                                          name="work-start-time"
+                                          use12Hours
+                                          defaultValue={
+                                            workData
+                                              ? dayjs(
+                                                  `${String(
+                                                    workData.startHour
+                                                  ).padStart(2, "0")}:${String(
+                                                    workData.startMin
+                                                  ).padStart(2, "0")} ${
+                                                    workData.startHour < 12
+                                                      ? "AM"
+                                                      : "PM"
+                                                  }`,
+                                                  "hh:mm A"
+                                                )
+                                              : undefined
+                                          }
+                                          onChange={(time) => {
+                                            setWorkStart(
+                                              dayjs(time, "hh:mm A").format(
+                                                "hh:mm A"
+                                              )
+                                            );
+                                          }}
+                                          placeholder="Start"
+                                          format={"hh:mm A"}
+                                          suffixIcon={null}
+                                          allowClear={false}
+                                        />
                                         <span>-</span>
-                                        <span>00:00</span>
-                                        <span>PM</span>
+                                        <TimePicker
+                                          name="work-end-time"
+                                          use12Hours
+                                          format={"hh:mm A"}
+                                          suffixIcon={null}
+                                          allowClear={false}
+                                          onChange={(time) => {
+                                            setWorkEnd(
+                                              dayjs(time, "hh:mm A").format(
+                                                "hh:mm A"
+                                              )
+                                            );
+                                          }}
+                                          placeholder="End"
+                                          defaultValue={
+                                            workData
+                                              ? dayjs(
+                                                  `${String(
+                                                    workData.endHour
+                                                  ).padStart(2, "0")}:${String(
+                                                    workData.endMin
+                                                  ).padStart(2, "0")} ${
+                                                    workData.endHour < 12
+                                                      ? "AM"
+                                                      : "PM"
+                                                  }`,
+                                                  "hh:mm A"
+                                                )
+                                              : undefined
+                                          }
+                                        />
                                       </h3>
                                     )}
 
                                     {!editingWork ? (
                                       <div
                                         className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
-                                        onClick={() => setEditingWork(true)}
+                                        onClick={() => {
+                                          setWorkStart(undefined);
+                                          setWorkEnd(undefined);
+                                          setEditingWork(true);
+                                        }}
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +371,11 @@ export const UserPreferencesModal = ({
                                       <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => setEditingWork(false)}
+                                          onClick={() => {
+                                            setWorkStart(undefined);
+                                            setWorkEnd(undefined);
+                                            setEditingWork(false);
+                                          }}
                                         >
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -247,7 +394,13 @@ export const UserPreferencesModal = ({
                                         </div>
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => setEditingWork(false)}
+                                          onClick={() => {
+                                            //TODO: mutate
+                                            //close editing
+                                            setWorkStart(undefined);
+                                            setWorkEnd(undefined);
+                                            setEditingWork(false);
+                                          }}
                                         >
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"

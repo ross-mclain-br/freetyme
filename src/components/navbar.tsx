@@ -60,7 +60,7 @@ export const Navbar = () => {
                 </div>
               </div>
               <div className="flex items-center">
-                <div className="flex-shrink-0">
+                {/* <div className="flex-shrink-0">
                   <button
                     type="button"
                     className="relative inline-flex items-center gap-x-1.5 rounded-md border border-secondary px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-150 hover:bg-secondary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
@@ -68,7 +68,7 @@ export const Navbar = () => {
                     <ClockIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
                     Lets Schedule!
                   </button>
-                </div>
+                </div> */}
                 <div className="hidden md:ml-4 md:flex md:flex-shrink-0 md:items-center">
                   <UserButton
                     afterSignOutUrl="/"

@@ -7,3 +7,30 @@
     font-family: "JetBrainsMono", system-ui, sans-serif;
   }
 }
+
+.ant-picker {
+  @apply border-none bg-transparent p-0 text-3xl !text-secondary !placeholder-secondary ring-0;
+}
+.ant-picker-input > input,
+.ant-picker-input > span {
+  @apply !w-[136px] !text-3xl !text-secondary !placeholder-secondary;
+}
+
+.ant-picker-panel {
+  @apply !bg-secondary font-bold !text-primary;
+}
+.ant-picker-ok > button {
+  @apply !bg-primary font-bold !text-secondary ring-1 ring-primary hover:!bg-transparent hover:!text-primary;
+}
+
+.ant-picker-time-panel-cell-inner {
+  @apply !text-primary;
+}
+.ant-picker-time-panel-cell-selected,
+.ant-picker-time-panel-cell-selected > div {
+  @apply rounded-sm !bg-primary !text-secondary;
+}
+
+.ant-picker-clear {
+  @apply hidden;
+}

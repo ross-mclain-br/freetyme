@@ -11,7 +11,7 @@ export const parseRecurringEventDuration = (
     | undefined
 ) => {
   if (!duration) {
-    return "";
+    return null;
   }
   const startAMPM = duration.startHour > 12 ? "PM" : "AM";
   const endAMPM = duration.endHour > 12 ? "PM" : "AM";
