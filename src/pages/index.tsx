@@ -1,5 +1,4 @@
 import Calendar from "~/components/calendar";
-import { UserPreferences } from "../components/user/userPreferences";
 
 export default function Home() {
   return (
@@ -13,7 +12,6 @@ export default function Home() {
           placeholder="Find Your Freetyme!"
         />
       </div>
-
       <div className="flex w-full flex-wrap justify-center">
         <div className="md:max-w-9xl flex w-full max-w-7xl flex-col">
           <Calendar />

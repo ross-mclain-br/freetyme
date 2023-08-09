@@ -82,6 +82,7 @@ export const userRouter = createTRPCRouter({
             });
           }
         }
+        return upsertUserReturn;
       } catch (error) {
         console.log(error);
         throw new TRPCError({

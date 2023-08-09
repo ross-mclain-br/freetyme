@@ -1,17 +1,14 @@
 import { Fragment, useCallback, useState } from "react";
 import {
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/20/solid";
 import { Menu, Transition } from "@headlessui/react";
-import { format, startOfToday, addWeeks, startOfWeek, set } from "date-fns";
+import { format, startOfToday, addWeeks, startOfWeek } from "date-fns";
 import CalendarWeekView from "./calendarViews/week";
-import { capitalize } from "../utils/util";
 import UpsertEventModal from "./events/upsertEventModal";
-import { RouterOutputs, api } from "~/utils/api";
-import type { Event } from "@prisma/client";
+import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
 import UserPreferencesModal from "./user/userPreferencesModal";
 

@@ -1,7 +1,7 @@
-import { Fragment, SetStateAction, Dispatch, useState } from "react";
+import { useState, Fragment } from "react";
+import type { SetStateAction, Dispatch } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
-import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import { parseRecurringEventDuration } from "~/utils/util";
@@ -14,6 +14,11 @@ export const UserPreferencesModal = ({
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { data: eventTypesData } = api.eventType.getEventTypes.useQuery();
+
+  const { mutateAsync: userRecurringEventMutation } =
+    api.recurringEvent.upsertRecurringEvent.useMutation();
+
   const [editingSleep, setEditingSleep] = useState(false);
   const [editingWork, setEditingWork] = useState(false);
 
@@ -34,7 +39,7 @@ export const UserPreferencesModal = ({
     }
   );
 
-  const { data: recurringEventData } =
+  const { data: recurringEventData, refetch: recurringEventDataRefetch } =
     api.recurringEvent.getRecurringEventsByUserId.useQuery(
       {
         userId: userData?.id ?? 0,
@@ -237,7 +242,62 @@ export const UserPreferencesModal = ({
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
                                           onClick={() => {
-                                            //TODO: mutate
+                                            // mutate
+                                            userRecurringEventMutation({
+                                              id: sleepData?.id ?? null,
+                                              startHour: sleepStart
+                                                ? dayjs(
+                                                    sleepStart,
+                                                    "hh:mm A"
+                                                  ).hour()
+                                                : sleepData?.startHour ?? 0,
+                                              startMin: sleepStart
+                                                ? dayjs(
+                                                    sleepStart,
+                                                    "hh:mm A"
+                                                  ).minute()
+                                                : sleepData?.startMin ?? 0,
+                                              endHour: sleepEnd
+                                                ? dayjs(
+                                                    sleepEnd,
+                                                    "hh:mm A"
+                                                  ).hour()
+                                                : sleepData?.endHour ?? 0,
+                                              endMin: sleepEnd
+                                                ? dayjs(
+                                                    sleepEnd,
+                                                    "hh:mm A"
+                                                  ).minute()
+                                                : sleepData?.endMin ?? 0,
+                                              isOnSunday: true,
+                                              isOnMonday: true,
+                                              isOnTuesday: true,
+                                              isOnWednesday: true,
+                                              isOnThursday: true,
+                                              isOnFriday: true,
+                                              isOnSaturday: true,
+                                              typeId:
+                                                eventTypesData?.find(
+                                                  (type) =>
+                                                    type.code === "sleep"
+                                                )?.id ?? 0,
+                                              userId: userData?.id ?? 0,
+                                              title: "Sleep",
+                                              description: "Sleep",
+                                            })
+                                              .then((res) => {
+                                                console.log(res);
+                                                recurringEventDataRefetch().catch(
+                                                  (err) => {
+                                                    console.log(err);
+                                                  }
+                                                );
+                                              })
+                                              .catch((err) => {
+                                                console.log(err);
+                                              });
+                                            // refetch
+
                                             //hide and reset
                                             setSleepStart(undefined);
                                             setSleepEnd(undefined);
@@ -395,7 +455,59 @@ export const UserPreferencesModal = ({
                                         <div
                                           className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
                                           onClick={() => {
-                                            //TODO: mutate
+                                            //mutate
+                                            userRecurringEventMutation({
+                                              id: workData?.id ?? null,
+                                              startHour: workStart
+                                                ? dayjs(
+                                                    workStart,
+                                                    "hh:mm A"
+                                                  ).hour()
+                                                : workData?.startHour ?? 0,
+                                              startMin: workStart
+                                                ? dayjs(
+                                                    workStart,
+                                                    "hh:mm A"
+                                                  ).minute()
+                                                : workData?.startMin ?? 0,
+                                              endHour: workEnd
+                                                ? dayjs(
+                                                    workEnd,
+                                                    "hh:mm A"
+                                                  ).hour()
+                                                : workData?.endHour ?? 0,
+                                              endMin: workEnd
+                                                ? dayjs(
+                                                    workEnd,
+                                                    "hh:mm A"
+                                                  ).minute()
+                                                : workData?.endMin ?? 0,
+                                              isOnSunday: false,
+                                              isOnMonday: true,
+                                              isOnTuesday: true,
+                                              isOnWednesday: true,
+                                              isOnThursday: true,
+                                              isOnFriday: true,
+                                              isOnSaturday: false,
+                                              typeId:
+                                                eventTypesData?.find(
+                                                  (type) => type.code === "work"
+                                                )?.id ?? 0,
+                                              userId: userData?.id ?? 0,
+                                              title: "Work",
+                                              description: "Work",
+                                            })
+                                              .then((res) => {
+                                                console.log(res);
+                                                recurringEventDataRefetch().catch(
+                                                  (err) => {
+                                                    console.log(err);
+                                                  }
+                                                );
+                                              })
+                                              .catch((err) => {
+                                                console.log(err);
+                                              });
                                             //close editing
                                             setWorkStart(undefined);
                                             setWorkEnd(undefined);

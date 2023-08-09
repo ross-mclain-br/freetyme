@@ -1,7 +1,7 @@
 import { Fragment, SetStateAction, Dispatch } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { ColorPicker, DatePicker, TimePicker } from "antd";
 
-import { PhotoIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 export const UpsertEventModal = ({
   open,
   setOpen,
@@ -11,6 +11,7 @@ export const UpsertEventModal = ({
   setOpen: Dispatch<SetStateAction<boolean>>;
   selectedDay: Date;
 }) => {
+  const { RangePicker } = DatePicker;
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -37,54 +38,35 @@ export const UpsertEventModal = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-7xl sm:p-6">
+              <Dialog.Panel className="sm:max-w-9xl relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6">
                 <div>
                   <div className="mx-auto max-w-md sm:max-w-3xl">
                     <div>
                       <form className="text-secondary">
                         <div className="space-y-12">
-                          <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
-                            <div className="col-span-1">
-                              <div className="text-center">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth={1.5}
-                                  stroke="currentColor"
-                                  className="mx-auto h-12 w-12 text-secondary"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
-                                  />
-                                </svg>
+                          <div className=" gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12">
+                            <div className="text-leftr">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className=" h-12 w-12 text-secondary"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
+                                />
+                              </svg>
 
-                                <h2 className="mt-2 text-base font-semibold leading-6 text-secondary">
-                                  Add Event
-                                </h2>
-                              </div>
-                              <div className="mt-5 flex items-center justify-center">
-                                <div className="">
-                                  <input
-                                    type="text"
-                                    name="region"
-                                    id="region"
-                                    autoComplete="address-level1"
-                                    className=" block max-h-[20px] w-full max-w-[20px] rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                                  />
-                                </div>
-                                <label
-                                  htmlFor="region"
-                                  className="ml-3 block whitespace-nowrap text-sm font-medium leading-6"
-                                >
-                                  Color Picker
-                                </label>
-                              </div>
+                              <h2 className="mt-2 text-base font-semibold leading-6 text-secondary">
+                                Add Event
+                              </h2>
                             </div>
 
-                            <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
+                            <div className="mt-4 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6 md:col-span-2">
                               <div className="sm:col-span-4">
                                 <label
                                   htmlFor="title"
@@ -120,39 +102,30 @@ export const UpsertEventModal = ({
                                   />
                                 </div>
                               </div>
-
-                              <div className="sm:col-span-3">
-                                <label
-                                  htmlFor="first-name"
-                                  className="block text-sm font-medium leading-6"
-                                >
-                                  Start Date
-                                </label>
-                                <div className="mt-2">
-                                  <input
-                                    type="text"
-                                    name="first-name"
-                                    id="first-name"
-                                    autoComplete="given-name"
-                                    className=" block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                                  />
+                              <div className="divide-b col-span-full flex items-center">
+                                <div className="">
+                                  <ColorPicker size="small" />
                                 </div>
+                                <label
+                                  htmlFor="region"
+                                  className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
+                                >
+                                  Color Picker
+                                </label>
                               </div>
 
                               <div className="sm:col-span-3">
                                 <label
-                                  htmlFor="last-name"
+                                  htmlFor="duration"
                                   className="block text-sm font-medium leading-6"
                                 >
-                                  End Date
+                                  Select Event Duration
                                 </label>
                                 <div className="mt-2">
-                                  <input
-                                    type="text"
-                                    name="last-name"
-                                    id="last-name"
-                                    autoComplete="family-name"
-                                    className=" block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                  <RangePicker
+                                    showTime
+                                    use12Hours
+                                    format={"YYYY-MM-DD hh:mm A"}
                                   />
                                 </div>
                               </div>

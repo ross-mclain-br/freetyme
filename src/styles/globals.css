@@ -16,6 +16,28 @@
   @apply !w-[136px] !text-3xl !text-secondary !placeholder-secondary;
 }
 
+.ant-picker-header * {
+  @apply !text-primary;
+}
+
+.ant-picker-range > .ant-picker-input > input {
+  @apply !w-[304px] font-bold;
+}
+
+.ant-picker-ranges {
+  @apply !bg-secondary;
+}
+
+.ant-picker-panels .ant-picker-content .ant-picker-cell-in-view,
+.ant-picker-panels .ant-picker-content th {
+  @apply !text-primary;
+}
+
+.ant-picker-range > .ant-picker-range-separator svg,
+.ant-picker-range > .ant-picker-suffix svg {
+  @apply !fill-secondary;
+}
+
 .ant-picker-panel {
   @apply !bg-secondary font-bold !text-primary;
 }
@@ -33,4 +55,8 @@
 
 .ant-picker-clear {
   @apply hidden;
+}
+
+.ant-color-picker-trigger {
+  @apply !border-0 !bg-transparent;
 }

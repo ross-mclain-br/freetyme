@@ -17,7 +17,6 @@ import { useEffect, useRef } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { format } from "date-fns";
 import type { RouterOutputs } from "~/utils/api";
-import { Router } from "next/router";
 
 export const CalendarWeekView = ({
   selectedDay,
@@ -96,8 +95,8 @@ export const CalendarWeekView = ({
       );
       const event: RouterOutputs["event"]["getEventsByUserId"][0]["event"] = {
         id: recurringEvent.id,
-        title: recurringEvent.type.name,
-        description: "",
+        title: recurringEvent.title ?? recurringEvent.type.name,
+        description: recurringEvent.description ?? "",
         ownerId: recurringEvent.userId,
         color: recurringEvent.type.color,
         textColor: recurringEvent.type.textColor,
