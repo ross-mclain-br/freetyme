@@ -1,6 +1,15 @@
-import { Fragment, SetStateAction, Dispatch } from "react";
+import { Fragment, type SetStateAction, type Dispatch, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ColorPicker, DatePicker, TimePicker } from "antd";
+import { ColorPicker, DatePicker, message, Select, Upload } from "antd";
+import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import type {
+  RcFile,
+  UploadChangeParam,
+  UploadFile,
+  UploadProps,
+} from "antd/es/upload/interface";
+import Image from "next/image";
+import { api } from "~/utils/api";
 
 export const UpsertEventModal = ({
   open,
@@ -12,6 +21,53 @@ export const UpsertEventModal = ({
   selectedDay: Date;
 }) => {
   const { RangePicker } = DatePicker;
+
+  const { data: eventTypesData } = api.eventType.getEventTypes.useQuery();
+
+  const getBase64 = (img: RcFile, callback: (url: string) => void) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result as string));
+    reader.readAsDataURL(img);
+  };
+
+  const beforeUpload = async (file: RcFile) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      await message.error("You can only upload JPG/PNG file!");
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      await message.error("Image must smaller than 2MB!");
+    }
+    return isJpgOrPng && isLt2M;
+  };
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  const handleChange: UploadProps["onChange"] = (
+    info: UploadChangeParam<UploadFile<RcFile>>
+  ) => {
+    if (info.file.status === "uploading") {
+      setLoading(true);
+      return;
+    }
+    if (info.file.status === "done") {
+      // Get this url from response in real world.
+      getBase64(info.file.originFileObj!, (url) => {
+        setLoading(false);
+        setImageUrl(url);
+      });
+    }
+  };
+
+  const uploadButton = (
+    <div>
+      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </div>
+  );
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -66,7 +122,22 @@ export const UpsertEventModal = ({
                               </h2>
                             </div>
 
-                            <div className="mt-4 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6 md:col-span-2">
+                            <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6 md:col-span-2">
+                              <div className="sm:col-span-3">
+                                <label
+                                  htmlFor="duration"
+                                  className="block text-sm font-medium leading-6"
+                                >
+                                  Select Event Duration
+                                </label>
+                                <div className="mt-2">
+                                  <RangePicker
+                                    showTime
+                                    use12Hours
+                                    format={"YYYY-MM-DD hh:mm A"}
+                                  />
+                                </div>
+                              </div>
                               <div className="sm:col-span-4">
                                 <label
                                   htmlFor="title"
@@ -102,37 +173,63 @@ export const UpsertEventModal = ({
                                   />
                                 </div>
                               </div>
-                              <div className="divide-b col-span-full flex items-center">
-                                <div className="">
-                                  <ColorPicker size="small" />
-                                </div>
+                              <div className="divide-b col-span-full">
                                 <label
-                                  htmlFor="region"
-                                  className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
-                                >
-                                  Color Picker
-                                </label>
-                              </div>
-
-                              <div className="sm:col-span-3">
-                                <label
-                                  htmlFor="duration"
+                                  htmlFor="type"
                                   className="block text-sm font-medium leading-6"
                                 >
-                                  Select Event Duration
+                                  Type
                                 </label>
                                 <div className="mt-2">
-                                  <RangePicker
-                                    showTime
-                                    use12Hours
-                                    format={"YYYY-MM-DD hh:mm A"}
+                                  <Select
+                                    labelInValue
+                                    style={{ width: 200 }}
+                                    placeholder="Search to Select"
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      (option?.label ?? "").includes(input)
+                                    }
+                                    filterSort={(optionA, optionB) =>
+                                      (optionA?.label ?? "")
+                                        .toLowerCase()
+                                        .localeCompare(
+                                          (optionB?.label ?? "").toLowerCase()
+                                        )
+                                    }
+                                    options={eventTypesData?.map((type) => ({
+                                      value: type.id,
+                                      label: type.name,
+                                    }))}
                                   />
                                 </div>
                               </div>
-
+                              <div className="divide-b col-span-full flex items-center space-x-3">
+                                <div className="flex items-center">
+                                  <div className="">
+                                    <ColorPicker size="small" />
+                                  </div>
+                                  <label
+                                    htmlFor="region"
+                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
+                                  >
+                                    Color Picker
+                                  </label>
+                                </div>
+                                <div className="flex items-center">
+                                  <div className="">
+                                    <ColorPicker size="small" />
+                                  </div>
+                                  <label
+                                    htmlFor="region"
+                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
+                                  >
+                                    Text Color Picker
+                                  </label>
+                                </div>
+                              </div>
                               <div className="sm:col-span-full">
                                 <label
-                                  htmlFor="postal-code"
+                                  htmlFor="location"
                                   className="block text-sm font-medium leading-6"
                                 >
                                   Location
@@ -140,11 +237,42 @@ export const UpsertEventModal = ({
                                 <div className="mt-2">
                                   <input
                                     type="search"
-                                    name="postal-code"
-                                    id="postal-code"
-                                    autoComplete="postal-code"
-                                    className=" block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                    name="location"
+                                    id="location"
+                                    autoComplete="location"
+                                    className="block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                                   />
+                                </div>
+                              </div>
+                              <div className="sm:col-span-full">
+                                <label
+                                  htmlFor="image"
+                                  className="block text-sm font-medium leading-6"
+                                >
+                                  Image
+                                </label>
+                                <div className="mt-2">
+                                  <Upload
+                                    name="avatar"
+                                    listType="picture-card"
+                                    className="avatar-uploader"
+                                    showUploadList={false}
+                                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                                    beforeUpload={beforeUpload}
+                                    onChange={handleChange}
+                                  >
+                                    {imageUrl ? (
+                                      <Image
+                                        src={imageUrl}
+                                        width={120}
+                                        height={120}
+                                        alt="avatar"
+                                        style={{ width: "100%" }}
+                                      />
+                                    ) : (
+                                      uploadButton
+                                    )}
+                                  </Upload>
                                 </div>
                               </div>
                             </div>

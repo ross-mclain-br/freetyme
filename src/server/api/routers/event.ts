@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
-import { startOfToday } from "date-fns";
 
 export const eventRouter = createTRPCRouter({
   getEventsByUserId: privateProcedure
