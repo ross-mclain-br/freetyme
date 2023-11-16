@@ -36,6 +36,12 @@ export const recurringEventRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        if (!input.typeId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Error upserting user recurring event. Provide Type Id",
+          });
+        }
         const upsertRecurringEventReturn =
           await ctx.prisma.userRecurringEvents.upsert({
             where: { id: input.id ?? -1 },

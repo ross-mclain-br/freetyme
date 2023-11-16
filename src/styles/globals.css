@@ -15,11 +15,27 @@
 .ant-picker-input > span {
   @apply !w-[136px] !text-2xl !text-secondary !placeholder-secondary;
 }
+.ant-picker.ant-picker-range.ant-picker-status-error {
+  @apply !bg-transparent;
+}
 
 .ant-picker-header * {
   @apply !text-primary;
 }
+.ant-select > .ant-select-selector {
+  @apply !border-secondary  !text-primary !placeholder-primary;
+}
+.ant-select > .ant-select-selector > .ant-select-selection-search > input,
+.ant-select > .ant-select-selector > .ant-select-selection-placeholder,
+.ant-select > .ant-select-selector > .ant-select-selection-item,
+.ant-select-arrow,
+.ant-select-item {
+  @apply !font-bold !text-primary !placeholder-primary;
+}
 
+.ant-select-dropdown {
+  @apply !bg-secondary !text-primary;
+}
 .ant-picker-range {
   @apply !p-3 !ring-1 !ring-secondary;
 }
@@ -62,7 +78,7 @@
 }
 
 .ant-color-picker-trigger {
-  @apply !border-0 !bg-transparent;
+  @apply !border !bg-tertiary;
 }
 
 .ant-upload {

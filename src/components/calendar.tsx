@@ -369,16 +369,20 @@ export const Calendar = () => {
         />
       </div>
 
-      <UpsertEventModal
-        open={showUpsertEventModal}
-        setOpen={setShowUpsertEventModal}
-        selectedDay={selectedDate}
-      />
+      {showUpsertEventModal && (
+        <UpsertEventModal
+          open={showUpsertEventModal}
+          setOpen={setShowUpsertEventModal}
+          selectedDay={selectedDate}
+        />
+      )}
 
-      <UserPreferencesModal
-        open={showUserPreferencesModal}
-        setOpen={setUserPreferencesModal}
-      />
+      {showUserPreferencesModal && (
+        <UserPreferencesModal
+          open={showUserPreferencesModal}
+          setOpen={setUserPreferencesModal}
+        />
+      )}
     </>
   );
 };

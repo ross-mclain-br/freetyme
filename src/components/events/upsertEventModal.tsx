@@ -1,6 +1,14 @@
 import { Fragment, type SetStateAction, type Dispatch, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ColorPicker, DatePicker, message, Select, Upload } from "antd";
+import {
+  ColorPicker,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Select,
+  Upload,
+} from "antd";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons";
 import type {
   RcFile,
@@ -10,6 +18,8 @@ import type {
 } from "antd/es/upload/interface";
 import Image from "next/image";
 import { api } from "~/utils/api";
+
+const { TextArea } = Input;
 
 export const UpsertEventModal = ({
   open,
@@ -22,7 +32,8 @@ export const UpsertEventModal = ({
 }) => {
   const { RangePicker } = DatePicker;
 
-  const { data: eventTypesData } = api.eventType.getEventTypes.useQuery();
+  const { mutateAsync: userEventMutation } =
+    api.event.upsertEvent.useMutation();
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -94,11 +105,11 @@ export const UpsertEventModal = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="sm:max-w-9xl relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6">
-                <div>
-                  <div className="mx-auto max-w-md sm:max-w-3xl">
-                    <div>
-                      <form className="text-secondary">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+                <Form>
+                  <div>
+                    <div className="mx-auto max-w-md sm:max-w-3xl">
+                      <div className="text-secondary">
                         <div className="space-y-12">
                           <div className=" gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12">
                             <div className="text-leftr">
@@ -124,56 +135,72 @@ export const UpsertEventModal = ({
 
                             <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6 md:col-span-2">
                               <div className="sm:col-span-3">
-                                <label
-                                  htmlFor="duration"
-                                  className="block text-sm font-medium leading-6"
+                                <Form.Item
+                                  name="duration"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message:
+                                        "Please input a duration of your event",
+                                    },
+                                  ]}
                                 >
-                                  Select Event Duration
-                                </label>
-                                <div className="mt-2">
+                                  <label
+                                    htmlFor="duration"
+                                    className="mb-2 block text-sm font-medium leading-6 text-secondary"
+                                  >
+                                    Select Event Duration
+                                  </label>
                                   <RangePicker
                                     showTime
                                     use12Hours
                                     format={"YYYY-MM-DD hh:mm A"}
+                                    className="mb-1"
                                   />
-                                </div>
+                                </Form.Item>
                               </div>
                               <div className="sm:col-span-4">
-                                <label
-                                  htmlFor="title"
-                                  className="block text-sm font-medium leading-6"
+                                <Form.Item
+                                  name="title"
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: "Please input a title",
+                                    },
+                                  ]}
                                 >
-                                  Title
-                                </label>
-                                <div className="mt-2">
-                                  <input
-                                    id="title"
-                                    name="title"
+                                  <label
+                                    htmlFor="title"
+                                    className="mb-2 block text-sm font-medium leading-6 text-secondary"
+                                  >
+                                    Title
+                                  </label>
+                                  <Input
                                     type="title"
                                     autoComplete="title"
                                     placeholder="Add title for your event"
-                                    className=" block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                    className="mb-1 block w-full rounded-md bg-secondary p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                                   />
-                                </div>
+                                </Form.Item>
                               </div>
                               <div className="divide-b col-span-full">
-                                <label
-                                  htmlFor="description"
-                                  className="block text-sm font-medium leading-6"
-                                >
-                                  Description
-                                </label>
-                                <div className="mt-2">
-                                  <textarea
-                                    name="description"
-                                    id="description"
-                                    autoComplete="description"
-                                    placeholder="Add description for your event"
-                                    className="block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                                  />
-                                </div>
+                                <Form.Item name="description">
+                                  <label
+                                    htmlFor="description"
+                                    className="block text-sm font-medium leading-6 text-secondary"
+                                  >
+                                    Description
+                                  </label>
+                                  <div className="mt-2">
+                                    <TextArea
+                                      autoComplete="description"
+                                      placeholder="Add description for your event"
+                                      className="mb-1 block w-full rounded-md bg-secondary p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                    />
+                                  </div>
+                                </Form.Item>
                               </div>
-                              <div className="divide-b col-span-full">
+                              {/* <div className="divide-b col-span-full hidden">
                                 <label
                                   htmlFor="type"
                                   className="block text-sm font-medium leading-6"
@@ -186,6 +213,7 @@ export const UpsertEventModal = ({
                                     style={{ width: 200 }}
                                     placeholder="Search to Select"
                                     optionFilterProp="children"
+                                    defaultValue={{ value: "Calendar" }}
                                     filterOption={(input, option) =>
                                       (option?.label ?? "").includes(input)
                                     }
@@ -202,104 +230,112 @@ export const UpsertEventModal = ({
                                     }))}
                                   />
                                 </div>
-                              </div>
+                              </div> */}
                               <div className="divide-b col-span-full flex items-center space-x-3">
-                                <div className="flex items-center">
-                                  <div className="">
-                                    <ColorPicker size="small" />
+                                <Form.Item name="color">
+                                  <div className="flex items-center">
+                                    <ColorPicker
+                                      size="small"
+                                      defaultValue={"#2f056b"}
+                                      className={"!border !border-tertiary"}
+                                    />
+                                    <label
+                                      htmlFor="region"
+                                      className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                    >
+                                      Color Picker
+                                    </label>
                                   </div>
-                                  <label
-                                    htmlFor="region"
-                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
-                                  >
-                                    Color Picker
-                                  </label>
-                                </div>
-                                <div className="flex items-center">
-                                  <div className="">
-                                    <ColorPicker size="small" />
+                                </Form.Item>
+                                <Form.Item name="textColor">
+                                  <div className="flex items-center">
+                                    <ColorPicker
+                                      size="small"
+                                      defaultValue={"#f9e1cf"}
+                                      className={"!border !border-tertiary"}
+                                    />
+                                    <label
+                                      htmlFor="region"
+                                      className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                    >
+                                      Text Color Picker
+                                    </label>
                                   </div>
-                                  <label
-                                    htmlFor="region"
-                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6"
-                                  >
-                                    Text Color Picker
-                                  </label>
-                                </div>
+                                </Form.Item>
                               </div>
-                              <div className="sm:col-span-full">
-                                <label
-                                  htmlFor="location"
-                                  className="block text-sm font-medium leading-6"
-                                >
-                                  Location
-                                </label>
-                                <div className="mt-2">
-                                  <input
-                                    type="search"
-                                    name="location"
-                                    id="location"
-                                    autoComplete="location"
-                                    className="block w-full rounded-md border-0 p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-gray-300 placeholder:font-bold placeholder:text-primary/40 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                                  />
-                                </div>
-                              </div>
-                              <div className="sm:col-span-full">
-                                <label
-                                  htmlFor="image"
-                                  className="block text-sm font-medium leading-6"
-                                >
-                                  Image
-                                </label>
-                                <div className="mt-2">
-                                  <Upload
-                                    name="avatar"
-                                    listType="picture-card"
-                                    className="avatar-uploader"
-                                    showUploadList={false}
-                                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                                    beforeUpload={beforeUpload}
-                                    onChange={handleChange}
-                                  >
-                                    {imageUrl ? (
-                                      <Image
-                                        src={imageUrl}
-                                        width={120}
-                                        height={120}
-                                        alt="avatar"
-                                        style={{ width: "100%" }}
-                                      />
-                                    ) : (
-                                      uploadButton
-                                    )}
-                                  </Upload>
-                                </div>
-                              </div>
+                              {/*<div className="sm:col-span-full">*/}
+                              {/*  <label*/}
+                              {/*    htmlFor="location"*/}
+                              {/*    className="block text-sm font-medium leading-6"*/}
+                              {/*  >*/}
+                              {/*    Location*/}
+                              {/*  </label>*/}
+                              {/*  <div className="mt-2">*/}
+                              {/*    <Input*/}
+                              {/*      type="search"*/}
+                              {/*      name="location"*/}
+                              {/*      id="location"*/}
+                              {/*      autoComplete="location"*/}
+                              {/*      placeholder="Add location for your event"*/}
+                              {/*      className="block w-full rounded-md  p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"*/}
+                              {/*    />*/}
+                              {/*  </div>*/}
+                              {/*</div>*/}
+                              {/*<div className="sm:col-span-full">*/}
+                              {/*  <label*/}
+                              {/*    htmlFor="image"*/}
+                              {/*    className="block text-sm font-medium leading-6"*/}
+                              {/*  >*/}
+                              {/*    Image*/}
+                              {/*  </label>*/}
+                              {/*  <div className="mt-2">*/}
+                              {/*    <Upload*/}
+                              {/*      name="avatar"*/}
+                              {/*      listType="picture-card"*/}
+                              {/*      className="avatar-uploader"*/}
+                              {/*      showUploadList={false}*/}
+                              {/*      action="https://www.mocky.io/v2/5cc8019d300000980a055e76"*/}
+                              {/*      beforeUpload={beforeUpload}*/}
+                              {/*      onChange={handleChange}*/}
+                              {/*    >*/}
+                              {/*      {imageUrl ? (*/}
+                              {/*        <Image*/}
+                              {/*          src={imageUrl}*/}
+                              {/*          width={120}*/}
+                              {/*          height={120}*/}
+                              {/*          alt="avatar"*/}
+                              {/*          style={{ width: "100%" }}*/}
+                              {/*        />*/}
+                              {/*      ) : (*/}
+                              {/*        uploadButton*/}
+                              {/*      )}*/}
+                              {/*    </Upload>*/}
+                              {/*  </div>*/}
+                              {/*</div>*/}
                             </div>
                           </div>
                         </div>
-                      </form>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-5 flex items-center justify-center sm:mt-6">
-                  <div className="space-x-4">
-                    <button
-                      type="button"
-                      className="inline-flex w-24 justify-center rounded-md border border-secondary px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-secondary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
-                      onClick={() => setOpen(false)}
-                    >
-                      Back
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex w-24 justify-center rounded-md border border-secondary bg-secondary px-3 py-2 text-sm font-semibold text-tertiary shadow-sm transition-all duration-300 hover:bg-transparent hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
-                      onClick={() => setOpen(false)}
-                    >
-                      Save
-                    </button>
+                  <div className="mt-5 flex items-center justify-center sm:mt-6">
+                    <div className="space-x-4">
+                      <button
+                        type="button"
+                        className="inline-flex w-24 justify-center rounded-md border border-secondary px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-secondary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
+                        onClick={() => setOpen(false)}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        className="inline-flex w-24 justify-center rounded-md border border-secondary bg-secondary px-3 py-2 text-sm font-semibold text-tertiary shadow-sm transition-all duration-300 hover:bg-transparent hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </Form>
               </Dialog.Panel>
             </Transition.Child>
           </div>
