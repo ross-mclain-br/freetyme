@@ -17,7 +17,11 @@ import type {
   UploadProps,
 } from "antd/es/upload/interface";
 import Image from "next/image";
-import { api } from "~/utils/api";
+import { api, RouterOutputs } from "~/utils/api";
+import { Color } from "antd/es/color-picker";
+import { useUser } from "@clerk/nextjs";
+import dayjs from "dayjs";
+import { format } from "date-fns";
 
 const { TextArea } = Input;
 
@@ -25,15 +29,72 @@ export const UpsertEventModal = ({
   open,
   setOpen,
   selectedDay,
+  existingEvent,
+  setExistingEvent,
 }: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  selectedDay: Date;
+  selectedDay?: Date;
+  existingEvent?: RouterOutputs["event"]["getEventsByUserId"][0]["event"];
+  setExistingEvent?: Dispatch<
+    SetStateAction<
+      RouterOutputs["event"]["getEventsByUserId"][0]["event"] | undefined
+    >
+  >;
 }) => {
   const { RangePicker } = DatePicker;
 
+  const [form] = Form.useForm();
+  const { user } = useUser();
+
+  const { data: userData } = api.user.getUserByExternalId.useQuery(
+    {
+      externalUserId: user?.id ?? "",
+    },
+    {
+      enabled: !!user?.id,
+    }
+  );
+
+  const { data: eventTypesData } = api.eventType.getEventTypes.useQuery();
+
+  const { data: eventData, refetch: eventDataRefetch } =
+    api.event.getEventsByUserId.useQuery(
+      {
+        userId: userData?.id ?? 0,
+      },
+      {
+        enabled: !!userData?.id,
+      }
+    );
+
+  const eventType = eventTypesData?.find((type) =>
+    existingEvent?.typeId
+      ? type.id === existingEvent?.typeId
+      : type?.code?.toLowerCase() === "calendar"
+  );
+
   const { mutateAsync: userEventMutation } =
     api.event.upsertEvent.useMutation();
+
+  const [title, setTitle] = useState<string>(existingEvent?.title ?? "");
+  const [description, setDescription] = useState<string>(
+    existingEvent?.description ?? ""
+  );
+  const [color, setColor] = useState<string>(existingEvent?.color ?? "#2f056b");
+  const [textColor, setTextColor] = useState<string>(
+    existingEvent?.textColor ?? "#f9e1cf"
+  );
+  const [duration, setDuration] = useState<
+    { start: Date; end: Date } | undefined
+  >(
+    existingEvent?.start && existingEvent?.end
+      ? {
+          start: existingEvent?.start,
+          end: existingEvent?.end,
+        }
+      : undefined
+  );
 
   const getBase64 = (img: RcFile, callback: (url: string) => void) => {
     const reader = new FileReader();
@@ -106,7 +167,64 @@ export const UpsertEventModal = ({
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
-                <Form>
+                <Form
+                  form={form}
+                  name="upsertEventForm"
+                  layout="vertical"
+                  initialValues={{
+                    title: existingEvent?.title ?? "",
+                    description: existingEvent?.description ?? "",
+                    ...(existingEvent?.start &&
+                      existingEvent?.end && {
+                        duration: [
+                          dayjs(
+                            format(existingEvent?.start, "yyyy-MM-dd hh:mm a"),
+                            "YYYY-MM-DD hh:mm A"
+                          ),
+                          dayjs(
+                            format(existingEvent?.end, "yyyy-MM-dd hh:mm a"),
+                            "YYYY-MM-DD hh:mm A"
+                          ),
+                        ],
+                      }),
+                    color: existingEvent?.color ?? "#2f056b",
+                    textColor: existingEvent?.textColor ?? "#f9e1cf",
+                  }}
+                  onFinish={(values) => {
+                    if (
+                      title &&
+                      color &&
+                      textColor &&
+                      duration?.start &&
+                      duration?.end &&
+                      eventType?.id
+                    ) {
+                      void userEventMutation({
+                        id: existingEvent?.id ?? null,
+                        title: title,
+                        description: description ?? "",
+                        color: color,
+                        textColor: textColor,
+                        start: duration?.start,
+                        image: "",
+                        location: "",
+                        ownerId: userData?.id ?? 0,
+                        typeId: eventType?.id,
+                        end: duration?.end,
+                      })
+                        .then(() => {
+                          void eventDataRefetch();
+                          setOpen(false);
+                          if (setExistingEvent) {
+                            setExistingEvent(undefined);
+                          }
+                        })
+                        .catch((e) => {
+                          console.error(e);
+                        });
+                    }
+                  }}
+                >
                   <div>
                     <div className="mx-auto max-w-md sm:max-w-3xl">
                       <div className="text-secondary">
@@ -133,8 +251,14 @@ export const UpsertEventModal = ({
                               </h2>
                             </div>
 
-                            <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6 md:col-span-2">
+                            <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-6 md:col-span-2">
                               <div className="sm:col-span-3">
+                                <label
+                                  htmlFor="duration"
+                                  className="mb-2 block text-sm font-medium text-secondary"
+                                >
+                                  Select Event Duration
+                                </label>
                                 <Form.Item
                                   name="duration"
                                   rules={[
@@ -145,21 +269,29 @@ export const UpsertEventModal = ({
                                     },
                                   ]}
                                 >
-                                  <label
-                                    htmlFor="duration"
-                                    className="mb-2 block text-sm font-medium leading-6 text-secondary"
-                                  >
-                                    Select Event Duration
-                                  </label>
                                   <RangePicker
                                     showTime
                                     use12Hours
                                     format={"YYYY-MM-DD hh:mm A"}
                                     className="mb-1"
+                                    onChange={(value) => {
+                                      if (value?.[0] && value?.[1]) {
+                                        setDuration({
+                                          start: value?.[0]?.toDate(),
+                                          end: value?.[1]?.toDate(),
+                                        });
+                                      }
+                                    }}
                                   />
                                 </Form.Item>
                               </div>
                               <div className="sm:col-span-4">
+                                <label
+                                  htmlFor="title"
+                                  className="mb-2 block text-sm font-medium text-secondary"
+                                >
+                                  Title
+                                </label>
                                 <Form.Item
                                   name="title"
                                   rules={[
@@ -169,35 +301,32 @@ export const UpsertEventModal = ({
                                     },
                                   ]}
                                 >
-                                  <label
-                                    htmlFor="title"
-                                    className="mb-2 block text-sm font-medium leading-6 text-secondary"
-                                  >
-                                    Title
-                                  </label>
                                   <Input
-                                    type="title"
-                                    autoComplete="title"
                                     placeholder="Add title for your event"
+                                    onChange={(e) => setTitle(e.target.value)}
                                     className="mb-1 block w-full rounded-md bg-secondary p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                                   />
                                 </Form.Item>
                               </div>
                               <div className="divide-b col-span-full">
-                                <Form.Item name="description">
-                                  <label
-                                    htmlFor="description"
-                                    className="block text-sm font-medium leading-6 text-secondary"
-                                  >
-                                    Description
-                                  </label>
-                                  <div className="mt-2">
-                                    <TextArea
-                                      autoComplete="description"
-                                      placeholder="Add description for your event"
-                                      className="mb-1 block w-full rounded-md bg-secondary p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                                    />
-                                  </div>
+                                <label
+                                  htmlFor="description"
+                                  className="block text-sm font-medium leading-6 text-secondary"
+                                >
+                                  Description
+                                </label>
+                                <Form.Item
+                                  name="description"
+                                  className={"mt-2"}
+                                >
+                                  <TextArea
+                                    autoComplete="description"
+                                    placeholder="Add description for your event"
+                                    onChange={(e) =>
+                                      setDescription(e.target.value)
+                                    }
+                                    className="mb-1 block w-full rounded-md bg-secondary p-1.5 font-bold text-primary shadow-sm ring-1 ring-inset ring-secondary placeholder:font-bold placeholder:text-primary hover:border-secondary focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                  />
                                 </Form.Item>
                               </div>
                               {/* <div className="divide-b col-span-full hidden">
@@ -232,36 +361,46 @@ export const UpsertEventModal = ({
                                 </div>
                               </div> */}
                               <div className="divide-b col-span-full flex items-center space-x-3">
-                                <Form.Item name="color">
-                                  <div className="flex items-center">
+                                <div className="flex items-center">
+                                  <Form.Item
+                                    name="color"
+                                    className={"mb-0 flex items-center"}
+                                  >
                                     <ColorPicker
                                       size="small"
-                                      defaultValue={"#2f056b"}
+                                      onChange={(color) => {
+                                        setColor(color?.toHexString());
+                                      }}
                                       className={"!border !border-tertiary"}
                                     />
-                                    <label
-                                      htmlFor="region"
-                                      className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
-                                    >
-                                      Color Picker
-                                    </label>
-                                  </div>
-                                </Form.Item>
-                                <Form.Item name="textColor">
-                                  <div className="flex items-center">
+                                  </Form.Item>
+                                  <label
+                                    htmlFor="region"
+                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                  >
+                                    Color Picker
+                                  </label>
+                                </div>
+                                <div className="flex items-center">
+                                  <Form.Item
+                                    name="textColor"
+                                    className={"mb-0 flex items-center"}
+                                  >
                                     <ColorPicker
                                       size="small"
-                                      defaultValue={"#f9e1cf"}
+                                      onChange={(color) => {
+                                        setTextColor(color?.toHexString());
+                                      }}
                                       className={"!border !border-tertiary"}
                                     />
-                                    <label
-                                      htmlFor="region"
-                                      className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
-                                    >
-                                      Text Color Picker
-                                    </label>
-                                  </div>
-                                </Form.Item>
+                                  </Form.Item>
+                                  <label
+                                    htmlFor="region"
+                                    className="ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                  >
+                                    Text Color Picker
+                                  </label>
+                                </div>
                               </div>
                               {/*<div className="sm:col-span-full">*/}
                               {/*  <label*/}

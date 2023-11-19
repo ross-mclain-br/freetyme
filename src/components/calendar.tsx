@@ -230,7 +230,7 @@ export const Calendar = () => {
                 onClick={() => setShowUpsertEventModal(true)}
                 className="ml-6 rounded-md  border border-secondary px-3 py-2 text-sm text-secondary shadow-sm transition-all duration-300 hover:border-tertiary  hover:bg-tertiary hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
               >
-                Add event
+                Add Event
               </button>
             </div>
             <Menu as="div" className="relative ml-6 md:hidden">
