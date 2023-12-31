@@ -1,5 +1,6 @@
 import { RouterOutputs } from "./api";
-
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 export const capitalize = (value: string) => {
   return value?.[0]?.toUpperCase() + value?.slice(1);
 };
@@ -31,4 +32,8 @@ export const parseRecurringEventDuration = (
     2,
     "0"
   )}:${String(duration.endMin).padStart(2, "0")} ${endAMPM}`;
+};
+
+export const cn = (...inputs: ClassValue[]) => {
+  return twMerge(clsx(inputs));
 };

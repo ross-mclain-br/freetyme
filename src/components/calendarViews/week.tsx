@@ -25,12 +25,14 @@ export const CalendarWeekView = ({
   selectedWeek,
   userEvents,
   userRecurringEvents,
+  setShowUserPreferencesModal,
 }: {
   selectedDay: Date;
   setSelectedDay: Dispatch<SetStateAction<Date>>;
   selectedWeek: Date;
   userEvents: RouterOutputs["event"]["getEventsByUserId"];
   userRecurringEvents: RouterOutputs["recurringEvent"]["getRecurringEventsByUserId"];
+  setShowUserPreferencesModal: Dispatch<SetStateAction<boolean>>;
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const containerNav = useRef<HTMLDivElement>(null);
@@ -108,6 +110,7 @@ export const CalendarWeekView = ({
         start: startDate,
         end: endDate,
         typeId: recurringEvent.typeId,
+        type: recurringEvent.type,
         createdAt: recurringEvent.createdAt,
         updatedAt: recurringEvent.updatedAt,
         image: recurringEvent.type.image,
@@ -173,7 +176,7 @@ export const CalendarWeekView = ({
               ))}
             </div>
 
-            <div className="font bold -mr-px hidden grid-cols-7 divide-x divide-secondary border-r border-secondary text-sm leading-6 text-secondary sm:grid">
+            <div className="-mr-px hidden grid-cols-7 divide-x divide-secondary border-r border-secondary text-sm font-bold leading-6 text-secondary sm:grid">
               <div className="col-end-1 w-14" />
               {weekDays.map((day) => (
                 <button
@@ -336,8 +339,12 @@ export const CalendarWeekView = ({
                             style={{ backgroundColor: event.color }}
                             onClick={(e) => {
                               e.preventDefault();
-                              setSelectedEvent(event);
-                              setShowUpsertEventModal(true);
+                              if (event.type.code === "calendar") {
+                                setSelectedEvent(event);
+                                setShowUpsertEventModal(true);
+                              } else {
+                                setShowUserPreferencesModal(true);
+                              }
                             }}
                           >
                             <p

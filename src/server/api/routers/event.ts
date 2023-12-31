@@ -9,7 +9,11 @@ export const eventRouter = createTRPCRouter({
       return ctx.prisma.userEvents.findMany({
         where: { userId: input.userId },
         include: {
-          event: true,
+          event: {
+            include: {
+              type: true,
+            },
+          },
         },
       });
     }),
@@ -83,6 +87,34 @@ export const eventRouter = createTRPCRouter({
           });
         }
         return upsertEventReturn;
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Error upserting user recurring event.",
+        });
+      }
+    }),
+  deleteEvent: privateProcedure
+    .input(
+      z.object({
+        id: z.number().or(z.null()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { count: userEventsDeletedCount } =
+          await ctx.prisma.userEvents.deleteMany({
+            where: { eventId: input.id ?? -1 },
+          });
+
+        console.log(`userEventsDeletedCount: ${userEventsDeletedCount}`);
+
+        const deleteEventReturn = await ctx.prisma.event.delete({
+          where: { id: input.id ?? -1 },
+        });
+
+        return deleteEventReturn;
       } catch (error) {
         console.log(error);
         throw new TRPCError({

@@ -51,7 +51,7 @@ export const Calendar = () => {
 
   const [showUpsertEventModal, setShowUpsertEventModal] =
     useState<boolean>(false);
-  const [showUserPreferencesModal, setUserPreferencesModal] =
+  const [showUserPreferencesModal, setShowUserPreferencesModal] =
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [selectedWeek, setSelectedWeek] = useState<Date>(startOfWeek(today));
@@ -99,7 +99,7 @@ export const Calendar = () => {
           <div className="flex items-center">
             <div className="relative flex items-center rounded-md bg-transparent md:items-stretch">
               <button
-                onClick={() => setUserPreferencesModal(true)}
+                onClick={() => setShowUserPreferencesModal(true)}
                 type="button"
                 className="hidden rounded-md px-3.5 py-2 text-sm ring-1 ring-inset ring-secondary transition-all duration-300 hover:border-tertiary  hover:bg-tertiary  hover:text-secondary hover:ring-tertiary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary md:block"
               >
@@ -286,7 +286,7 @@ export const Calendar = () => {
                     <Menu.Item>
                       <a
                         href="#"
-                        onClick={() => setUserPreferencesModal(true)}
+                        onClick={() => setShowUserPreferencesModal(true)}
                         className={"block px-4 py-2 text-sm text-primary"}
                       >
                         User Preferences
@@ -366,6 +366,7 @@ export const Calendar = () => {
           selectedWeek={selectedWeek}
           userEvents={eventsData ?? []}
           userRecurringEvents={recurringEventsData ?? []}
+          setShowUserPreferencesModal={setShowUserPreferencesModal}
         />
       </div>
 
@@ -380,7 +381,7 @@ export const Calendar = () => {
       {showUserPreferencesModal && (
         <UserPreferencesModal
           open={showUserPreferencesModal}
-          setOpen={setUserPreferencesModal}
+          setOpen={setShowUserPreferencesModal}
         />
       )}
     </>

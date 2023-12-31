@@ -77,6 +77,9 @@ export const UpsertEventModal = ({
   const { mutateAsync: userEventMutation } =
     api.event.upsertEvent.useMutation();
 
+  const { mutateAsync: userEventDeleteMutation } =
+    api.event.deleteEvent.useMutation();
+
   const [title, setTitle] = useState<string>(existingEvent?.title ?? "");
   const [description, setDescription] = useState<string>(
     existingEvent?.description ?? ""
@@ -457,8 +460,8 @@ export const UpsertEventModal = ({
                       </div>
                     </div>
                   </div>
-                  <div className="mt-5 flex items-center justify-center sm:mt-6">
-                    <div className="space-x-4">
+                  <div className="mt-5 flex items-center sm:mt-6">
+                    <div className="flex flex-grow items-center justify-between gap-x-4">
                       <button
                         type="button"
                         className="inline-flex w-24 justify-center rounded-md border border-secondary px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-secondary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
@@ -466,6 +469,29 @@ export const UpsertEventModal = ({
                       >
                         Back
                       </button>
+                      {existingEvent?.id && (
+                        <button
+                          type="button"
+                          className="ml-auto mr-4 inline-flex w-24 justify-center rounded-md border border-destructive bg-destructive px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-destructive/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
+                          onClick={() => {
+                            userEventDeleteMutation({
+                              id: existingEvent?.id,
+                            })
+                              .then(() => {
+                                void eventDataRefetch();
+                                setOpen(false);
+                                if (setExistingEvent) {
+                                  setExistingEvent(undefined);
+                                }
+                              })
+                              .catch((e) => {
+                                console.error(e);
+                              });
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
                       <button
                         type="submit"
                         className="inline-flex w-24 justify-center rounded-md border border-secondary bg-secondary px-3 py-2 text-sm font-semibold text-tertiary shadow-sm transition-all duration-300 hover:bg-transparent hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
