@@ -1,4 +1,5 @@
 import Calendar from "~/components/calendar";
+import HomeTabs from "~/components/homeTabs";
 
 export default function Home() {
   return (
@@ -13,8 +14,8 @@ export default function Home() {
         />
       </div>
       <div className="flex w-full flex-wrap justify-center">
-        <div className="md:max-w-9xl flex w-full max-w-7xl flex-col">
-          <Calendar />
+        <div className="md:max-w-9xl flex w-full max-w-7xl flex-col items-center">
+          <HomeTabs />
         </div>
       </div>
     </div>
