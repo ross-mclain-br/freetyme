@@ -3,10 +3,13 @@ import { Fragment } from "react";
 import { format, startOfToday, addWeeks } from "date-fns";
 import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
+import { Spinner } from "@nextui-org/react";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Calendar, Clock, Terminal } from "lucide-react";
 
 export const FreeTyme = () => {
   const today = startOfToday();
-  const nextWeek = addWeeks(today, 1);
+  const nextWeek = addWeeks(today, 2);
 
   const { user, isSignedIn, isLoaded } = useUser();
 
@@ -19,78 +22,92 @@ export const FreeTyme = () => {
     }
   );
 
-  const { data: freetymeEventData } = api.freetyme.getFreetymeForUser.useQuery(
-    {
-      userId: userData?.id ?? 0,
-      start: today,
-      end: nextWeek,
-    },
-    {
-      enabled: !!userData?.id,
-    }
-  );
+  const { data: freetymeEventData, isLoading: freetymeEventLoading } =
+    api.freetyme.getFreetymeForUser.useQuery(
+      {
+        userId: userData?.id ?? 0,
+        start: today,
+        end: nextWeek,
+      },
+      {
+        enabled: !!userData?.id,
+      }
+    );
 
   return (
     <>
-      <div className="flex h-full w-full flex-col rounded-lg text-secondary">
-        <div className={"flex flex-grow flex-col"}>
-          {[...(freetymeEventData?.keys() ?? [])]?.map((date) => {
-            const events = freetymeEventData?.get(date) ?? [];
-            return (
-              <div
-                key={`freetyme-event-date-${date?.toISOString()}`}
-                className={"space-4 flex flex-col gap-y-4 p-3"}
-              >
-                <h1 className={"font-bold text-secondary"}>
-                  {format(new Date(date), "EEEE, MMMM do")}
-                </h1>
-                {events?.length > 0 ? (
+      <div className="flex h-full w-full flex-col rounded-b-lg text-secondary">
+        <div className={"flex flex-grow flex-col p-3"}>
+          {freetymeEventLoading ? (
+            <div className={"flex flex-row justify-center px-6 py-20"}>
+              <Spinner
+                label="Loading..."
+                color="secondary"
+                labelColor="secondary"
+              />
+            </div>
+          ) : (
+            <>
+              {[...(freetymeEventData?.keys() ?? [])]?.map((date) => {
+                const events = freetymeEventData?.get(date) ?? [];
+                return (
                   <div
+                    key={`freetyme-event-date-${date?.toISOString()}`}
                     className={
-                      "mb-3 flex flex-col gap-4 rounded-lg bg-secondary p-3"
+                      "space-4 flex flex-col gap-y-4 bg-transparent p-3"
                     }
                   >
-                    {events.map((event) => (
-                      <>
-                        <div className={"flex flex-row gap-4"}>
-                          <span className={"text-sm text-primary"}>
-                            {event.title}
-                          </span>
-                          <span className={"text-sm text-primary"}>
-                            {event.description}
-                          </span>
-                          <span className={"text-sm text-primary"}>
-                            {event.start.toISOString()}
-                          </span>
-                          <span className={"text-sm text-primary"}>
-                            {event.end.toISOString()}
-                          </span>
-                        </div>
-                        <div className={"flex flex-row gap-2"}>
-                          <span className={"text-sm text-primary"}>
-                            {event.location}
-                          </span>
-                          <span className={"text-sm text-primary"}>
-                            FreeTyme
-                          </span>
-                        </div>
-                      </>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={"flex flex-row"}>
-                    <span
+                    <Alert
+                      key={`freetyme-alert-${date?.toISOString()}`}
                       className={
-                        "ml-3 rounded-lg bg-secondary p-3 text-sm text-primary"
+                        "border-quaternary bg-gradient-to-r from-secondary to-success/90 shadow-lg"
                       }
                     >
-                      You are all booked!
-                    </span>
+                      <Calendar className="h-4 w-4 " color={"black"} />
+                      <AlertTitle className={"text-black"}>
+                        {format(new Date(date), "EEEE, MMMM do")}
+                      </AlertTitle>
+                      <AlertDescription className={"gap-y-3 py-3"}>
+                        {events?.length > 0 ? (
+                          <div className={" flex flex-col gap-4"}>
+                            {events.map((event) => {
+                              const formattedStart = format(
+                                event?.start,
+                                "h:mm a"
+                              );
+                              const formattedEnd = format(event?.end, "h:mm a");
+                              const totalHours =
+                                (event?.end?.getTime() -
+                                  event?.start?.getTime()) /
+                                3600000;
+                              return (
+                                <Alert
+                                  key={`freetyme-alert-${event.id}`}
+                                  className={"border-quaternary"}
+                                >
+                                  <Clock className="h-4 w-4" />
+                                  <AlertTitle>
+                                    {formattedStart} - {formattedEnd} : --{" "}
+                                    {totalHours} Hours Available --
+                                  </AlertTitle>
+                                </Alert>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className={"flex flex-row"}>
+                            <span className={"ml-3 p-3 text-sm text-primary"}>
+                              -- 0 Hours Available --
+                            </span>
+                          </div>
+                        )}
+                      </AlertDescription>
+                    </Alert>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
     </>

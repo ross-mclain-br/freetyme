@@ -1,9 +1,14 @@
 import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
+
+import { nextui } from "@nextui-org/react";
 export default {
   important: true,
   darkMode: ["class"],
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     container: {
       center: true,
@@ -78,5 +83,9 @@ export default {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("tailwindcss-animate")],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require("tailwindcss-animate"),
+    nextui(),
+  ],
 } satisfies Config;
