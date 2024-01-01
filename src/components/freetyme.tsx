@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 
-import { format, startOfToday, addWeeks } from "date-fns";
+import { format, startOfToday, addWeeks, isToday, isTomorrow } from "date-fns";
 import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
 import { Spinner } from "@nextui-org/react";
@@ -50,6 +50,11 @@ export const FreeTyme = () => {
             <>
               {[...(freetymeEventData?.keys() ?? [])]?.map((date) => {
                 const events = freetymeEventData?.get(date) ?? [];
+                const formattedDate = isToday(date)
+                  ? `Today - ${format(new Date(date), "EEEE, MMMM do")}`
+                  : isTomorrow(date)
+                  ? `Tomorrow - ${format(new Date(date), "EEEE, MMMM do")}`
+                  : format(new Date(date), "EEEE, MMMM do");
                 return (
                   <div
                     key={`freetyme-event-date-${date?.toISOString()}`}
@@ -60,12 +65,12 @@ export const FreeTyme = () => {
                     <Alert
                       key={`freetyme-alert-${date?.toISOString()}`}
                       className={
-                        "border-quaternary bg-gradient-to-r from-secondary to-success/90 shadow-lg"
+                        "border-l-4 border-b-quaternary border-l-success border-r-quaternary border-t-quaternary bg-quaternary/70  shadow-lg"
                       }
                     >
-                      <Calendar className="h-4 w-4 " color={"black"} />
-                      <AlertTitle className={"text-black"}>
-                        {format(new Date(date), "EEEE, MMMM do")}
+                      <Calendar className="h-4 w-4 " color={"white"} />
+                      <AlertTitle className={"text-white"}>
+                        {formattedDate}
                       </AlertTitle>
                       <AlertDescription className={"gap-y-3 py-3"}>
                         {events?.length > 0 ? (
