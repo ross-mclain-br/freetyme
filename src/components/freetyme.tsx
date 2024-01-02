@@ -1,11 +1,11 @@
 import { Fragment } from "react";
 
-import { format, startOfToday, addWeeks, isToday, isTomorrow } from "date-fns";
+import { format, addWeeks, isToday, isTomorrow } from "date-fns";
 import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
 import { Spinner } from "@nextui-org/react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Calendar, Clock, Terminal } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 
 export const FreeTyme = ({ today }: { today: Date }) => {
   const nextWeek = addWeeks(today, 2);
