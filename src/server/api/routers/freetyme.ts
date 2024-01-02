@@ -50,7 +50,7 @@ export const freetymeRouter = createTRPCRouter({
         `Start: ISO: ${input?.start?.toISOString()} - UTC STRING: ${input?.start?.toUTCString()} - LocaleString: ${input?.start?.toLocaleString()}`
       );
       if (input?.start?.toISOString()) {
-        let currentDate = new Date(startOfDay(input.start.toUTCString()));
+        let currentDate = new Date(input.start.toUTCString());
 
         log.debug(
           `CurrentDate: ISO: ${currentDate?.toISOString()} - UTC STRING: ${input?.start?.toUTCString()} - LocaleString: ${currentDate?.toLocaleString()}`
@@ -116,10 +116,13 @@ export const freetymeRouter = createTRPCRouter({
                 `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
               );
               const start = setHours(
-                new Date(currentDate),
+                new Date(currentDate?.toUTCString()),
                 freetymeEventStartHour
               );
-              const end = setHours(new Date(currentDate), freetymeEventEndHour);
+              const end = setHours(
+                new Date(currentDate?.toUTCString()),
+                freetymeEventEndHour
+              );
 
               log.debug(
                 `${currentDate?.toISOString()} - Freetyme Event Found: Start: ${format(
@@ -158,10 +161,13 @@ export const freetymeRouter = createTRPCRouter({
               `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
             );
             const start = setHours(
-              new Date(currentDate),
+              new Date(currentDate?.toUTCString()),
               freetymeEventStartHour
             );
-            const end = setHours(new Date(currentDate), freetymeEventEndHour);
+            const end = setHours(
+              new Date(currentDate?.toUTCString()),
+              freetymeEventEndHour
+            );
 
             log.debug(
               `${currentDate?.toISOString()} - Freetyme Event After 24 Hours Found: Start: ${format(
