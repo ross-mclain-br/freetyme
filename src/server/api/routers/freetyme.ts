@@ -65,26 +65,32 @@ export const freetymeRouter = createTRPCRouter({
         let currentHour = 1;
         let freetymeEventStartHour: number | null = null;
         let freetymeEventEndHour: number | null = null;
-        while (currentHour <= 24) {
+        while (currentHour < 24) {
           const currentDayEvent = currentDayEvents.find((userEvent) => {
             return (
               userEvent.event.start.getHours() <= currentHour &&
-              userEvent.event.end.getHours() >= currentHour
+              (userEvent.event.end.getHours() > currentHour ||
+                (userEvent.event.end.getHours() === currentHour &&
+                  userEvent.event.end.getMinutes() > 0))
             );
           });
           const currentDayRecurringEvent = currentDayRecurringEvents.find(
             (userRecurringEvent) => {
               return (
                 userRecurringEvent.startHour <= currentHour &&
-                userRecurringEvent.endHour >= currentHour
+                (userRecurringEvent.endHour > currentHour ||
+                  (userRecurringEvent.endHour === currentHour &&
+                    userRecurringEvent.endMin > 0))
               );
             }
           );
           if (!currentDayEvent && !currentDayRecurringEvent) {
             if (freetymeEventStartHour === null) {
               freetymeEventStartHour = currentHour;
+              console.log(`Freetyme Start: ${freetymeEventStartHour}`);
             }
-            freetymeEventEndHour = currentHour;
+            freetymeEventEndHour = currentHour + 1;
+            console.log(`Freetyme End: ${freetymeEventEndHour}`);
           } else if (
             freetymeEventStartHour !== null &&
             freetymeEventEndHour !== null &&
@@ -97,7 +103,7 @@ export const freetymeRouter = createTRPCRouter({
             const end = setHours(new Date(currentDate), freetymeEventEndHour);
 
             currentDayFreetymeArray?.push({
-              id: -1,
+              id: start.getMilliseconds(),
               title: "Freetyme",
               description: "Freetyme",
               start: start,
