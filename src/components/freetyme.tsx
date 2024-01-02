@@ -78,9 +78,12 @@ export const FreeTyme = () => {
                             {events.map((event) => {
                               const formattedStart = format(
                                 event?.start,
-                                "h:mm a"
+                                "h:mm a z"
                               );
-                              const formattedEnd = format(event?.end, "h:mm a");
+                              const formattedEnd = format(
+                                event?.end,
+                                "h:mm a z"
+                              );
                               const totalHours =
                                 (event?.end?.getTime() -
                                   event?.start?.getTime()) /
