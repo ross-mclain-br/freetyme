@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { Event } from "@prisma/client";
-import { addDays, isSameDay, setHours } from "date-fns";
+import { addDays, format, isSameDay, setHours } from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
 import { log } from "next-axiom";
 
@@ -72,6 +72,9 @@ export const freetymeRouter = createTRPCRouter({
         let freetymeEventStartHour: number | null = null;
         let freetymeEventEndHour: number | null = null;
         while (currentHour < 24) {
+          log.debug(
+            `${currentDate?.toISOString()} - Current Hour: ${currentHour}`
+          );
           const currentDayEvent = currentDayEvents.find((userEvent) => {
             return (
               userEvent.event.start.getHours() <= currentHour &&
@@ -112,6 +115,13 @@ export const freetymeRouter = createTRPCRouter({
             );
             const end = setHours(new Date(currentDate), freetymeEventEndHour);
 
+            log.debug(
+              `${currentDate?.toISOString()} - Freetyme Event Found: Start: ${format(
+                start,
+                "yyyy-MM-dd HH:mm:ss"
+              )} - End:${format(end, "yyyy-MM-dd HH:mm:ss")})}`
+            );
+
             currentDayFreetymeArray?.push({
               id: start.getMilliseconds(),
               title: "Freetyme",
@@ -141,6 +151,13 @@ export const freetymeRouter = createTRPCRouter({
           const start = setHours(new Date(currentDate), freetymeEventStartHour);
           const end = setHours(new Date(currentDate), freetymeEventEndHour);
 
+          log.debug(
+            `${currentDate?.toISOString()} - Freetyme Event After 24 Hours Found: Start: ${format(
+              start,
+              "yyyy-MM-dd HH:mm:ss"
+            )} - End:${format(end, "yyyy-MM-dd HH:mm:ss")})}`
+          );
+
           currentDayFreetymeArray?.push({
             id: start.getMilliseconds(),
             title: "Freetyme",
@@ -162,7 +179,7 @@ export const freetymeRouter = createTRPCRouter({
 
         currentDate = addDays(currentDate, 1);
       }
-      console.log(JSON.stringify(freetymeEventList, null, 2));
+      log.debug("Freetyme List:", { freetymeEventList: freetymeEventList });
 
       return freetymeEventList;
     }),
