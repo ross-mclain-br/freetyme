@@ -4,6 +4,7 @@ import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { Event } from "@prisma/client";
 import { addDays, isSameDay, setHours } from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
+import { log } from "next-axiom";
 
 export const freetymeRouter = createTRPCRouter({
   getFreetymeForUser: privateProcedure
@@ -45,22 +46,27 @@ export const freetymeRouter = createTRPCRouter({
       type FreetymeEvent = Event;
 
       const freetymeEventList = new Map<Date, FreetymeEvent[]>();
-      let currentDate = new Date(input.start);
+      let currentDate = new Date(setHours(input.start, 0));
       while (currentDate <= input.end) {
         if (!freetymeEventList.has(currentDate)) {
           freetymeEventList.set(currentDate, []);
         }
+        log.debug(
+          `Gathering freetyme for current date: ${currentDate?.toISOString()}`
+        );
         const currentDayFreetymeArray = freetymeEventList.get(currentDate);
-        const currentDayEvents = userEventsInDuration.filter(
-          (userEvent) =>
-            isSameDay(userEvent.event.start, currentDate) ||
-            isSameDay(userEvent.event.end, currentDate)
-        );
-        const currentDayRecurringEvents = userRecurringEventsInDuration.filter(
-          (userRecurringEvent) => {
-            return isRecurringEventOnDay(userRecurringEvent, currentDate);
-          }
-        );
+        const currentDayEvents = userEventsInDuration?.length
+          ? userEventsInDuration.filter(
+              (userEvent) =>
+                isSameDay(userEvent.event.start, currentDate) ||
+                isSameDay(userEvent.event.end, currentDate)
+            )
+          : [];
+        const currentDayRecurringEvents = userRecurringEventsInDuration?.length
+          ? userRecurringEventsInDuration.filter((userRecurringEvent) => {
+              return isRecurringEventOnDay(userRecurringEvent, currentDate);
+            })
+          : [];
 
         let currentHour = 1;
         let freetymeEventStartHour: number | null = null;
@@ -87,10 +93,14 @@ export const freetymeRouter = createTRPCRouter({
           if (!currentDayEvent && !currentDayRecurringEvent) {
             if (freetymeEventStartHour === null) {
               freetymeEventStartHour = currentHour;
-              console.log(`Freetyme Start: ${freetymeEventStartHour}`);
+              log.debug(
+                `${currentDate?.toISOString()} - Freetyme Start: ${freetymeEventStartHour}`
+              );
             }
             freetymeEventEndHour = currentHour + 1;
-            console.log(`Freetyme End: ${freetymeEventEndHour}`);
+            log.debug(
+              `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
+            );
           } else if (
             freetymeEventStartHour !== null &&
             freetymeEventEndHour !== null &&

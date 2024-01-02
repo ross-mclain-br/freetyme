@@ -8,6 +8,7 @@ import { JetBrains_Mono } from "next/font/google";
 import Controller from "~/utils/controller";
 import { NextUIProvider } from "@nextui-org/react";
 
+export { useReportWebVitals } from "next-axiom";
 // If loading a variable font, you don't need to specify the font weight
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
 
