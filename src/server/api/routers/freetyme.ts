@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { Event } from "@prisma/client";
-import { addDays, format, isSameDay, setHours, startOfDay } from "date-fns";
+import { addDays, addHours, format, isSameDay } from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
 import { log } from "next-axiom";
 
@@ -115,11 +115,11 @@ export const freetymeRouter = createTRPCRouter({
               log.debug(
                 `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
               );
-              const start = setHours(
+              const start = addHours(
                 new Date(currentDate?.toUTCString()),
                 freetymeEventStartHour
               );
-              const end = setHours(
+              const end = addHours(
                 new Date(currentDate?.toUTCString()),
                 freetymeEventEndHour
               );
@@ -160,11 +160,11 @@ export const freetymeRouter = createTRPCRouter({
             log.debug(
               `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
             );
-            const start = setHours(
+            const start = addHours(
               new Date(currentDate?.toUTCString()),
               freetymeEventStartHour
             );
-            const end = setHours(
+            const end = addHours(
               new Date(currentDate?.toUTCString()),
               freetymeEventEndHour
             );
