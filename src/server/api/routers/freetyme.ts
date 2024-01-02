@@ -2,9 +2,17 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { Event } from "@prisma/client";
-import { addDays, format, isSameDay, setHours } from "date-fns";
+import {
+  addDays,
+  format,
+  isSameDay,
+  setHours,
+  setMinutes,
+  setSeconds,
+} from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
 import { log } from "next-axiom";
+import { setZoned } from "@internationalized/date/src/manipulation";
 
 export const freetymeRouter = createTRPCRouter({
   getFreetymeForUser: privateProcedure
@@ -46,7 +54,17 @@ export const freetymeRouter = createTRPCRouter({
       type FreetymeEvent = Event;
 
       const freetymeEventList = new Map<Date, FreetymeEvent[]>();
-      let currentDate = new Date(setHours(input.start, 0));
+      log.debug(
+        `Start: ISO: ${input.start?.toISOString()} - DateString: ${input.start?.toDateString()} - LocaleString: ${input.start?.toLocaleString()}`
+      );
+      let currentDate = setHours(
+        setMinutes(setSeconds(new Date(input?.start?.toISOString()), 0), 0),
+        0
+      );
+
+      log.debug(
+        `CurrentDate: ISO: ${currentDate?.toISOString()} - DateString: ${currentDate?.toDateString()} - LocaleString: ${currentDate?.toLocaleString()}`
+      );
       while (currentDate <= input.end) {
         if (!freetymeEventList.has(currentDate)) {
           freetymeEventList.set(currentDate, []);
@@ -72,9 +90,6 @@ export const freetymeRouter = createTRPCRouter({
         let freetymeEventStartHour: number | null = null;
         let freetymeEventEndHour: number | null = null;
         while (currentHour < 24) {
-          log.debug(
-            `${currentDate?.toISOString()} - Current Hour: ${currentHour}`
-          );
           const currentDayEvent = currentDayEvents.find((userEvent) => {
             return (
               userEvent.event.start.getHours() <= currentHour &&
@@ -101,14 +116,14 @@ export const freetymeRouter = createTRPCRouter({
               );
             }
             freetymeEventEndHour = currentHour + 1;
-            log.debug(
-              `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
-            );
           } else if (
             freetymeEventStartHour !== null &&
             freetymeEventEndHour !== null &&
             freetymeEventEndHour > freetymeEventStartHour
           ) {
+            log.debug(
+              `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
+            );
             const start = setHours(
               new Date(currentDate),
               freetymeEventStartHour
@@ -148,6 +163,9 @@ export const freetymeRouter = createTRPCRouter({
           freetymeEventEndHour !== null &&
           freetymeEventEndHour > freetymeEventStartHour
         ) {
+          log.debug(
+            `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
+          );
           const start = setHours(new Date(currentDate), freetymeEventStartHour);
           const end = setHours(new Date(currentDate), freetymeEventEndHour);
 
