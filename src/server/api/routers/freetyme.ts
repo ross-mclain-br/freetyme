@@ -47,13 +47,13 @@ export const freetymeRouter = createTRPCRouter({
 
       const freetymeEventList = new Map<Date, FreetymeEvent[]>();
       log.debug(
-        `Start: ISO: ${input?.start?.toISOString()} - DateString: ${input?.start?.toDateString()} - LocaleString: ${input?.start?.toLocaleString()}`
+        `Start: ISO: ${input?.start?.toISOString()} - UTC STRING: ${input?.start?.toUTCString()} - LocaleString: ${input?.start?.toLocaleString()}`
       );
       if (input?.start?.toISOString()) {
-        let currentDate = new Date(input.start.toISOString());
+        let currentDate = new Date(input.start.toUTCString());
 
         log.debug(
-          `CurrentDate: ISO: ${currentDate?.toISOString()} - DateString: ${currentDate?.toDateString()} - LocaleString: ${currentDate?.toLocaleString()}`
+          `CurrentDate: ISO: ${currentDate?.toISOString()} - UTC STRING: ${input?.start?.toUTCString()} - LocaleString: ${currentDate?.toLocaleString()}`
         );
         while (currentDate <= input.end) {
           if (!freetymeEventList.has(currentDate)) {
