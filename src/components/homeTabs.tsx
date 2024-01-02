@@ -1,9 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Calendar from "~/components/calendar";
 import FreeTyme from "~/components/freetyme";
+import { startOfToday } from "date-fns";
 
 export const HomeTabs = () => {
-  const today = new Date();
+  const today = startOfToday();
   return (
     <Tabs defaultValue="freetyme" className="w-full">
       <TabsList className="grid w-full grid-cols-2">

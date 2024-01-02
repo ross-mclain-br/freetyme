@@ -2,17 +2,9 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { Event } from "@prisma/client";
-import {
-  addDays,
-  format,
-  isSameDay,
-  setHours,
-  setMinutes,
-  setSeconds,
-} from "date-fns";
+import { addDays, format, isSameDay, setHours } from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
 import { log } from "next-axiom";
-import { setZoned } from "@internationalized/date/src/manipulation";
 
 export const freetymeRouter = createTRPCRouter({
   getFreetymeForUser: privateProcedure
@@ -55,68 +47,109 @@ export const freetymeRouter = createTRPCRouter({
 
       const freetymeEventList = new Map<Date, FreetymeEvent[]>();
       log.debug(
-        `Start: ISO: ${input.start?.toISOString()} - DateString: ${input.start?.toDateString()} - LocaleString: ${input.start?.toLocaleString()}`
+        `Start: ISO: ${input?.start?.toISOString()} - DateString: ${input?.start?.toDateString()} - LocaleString: ${input?.start?.toLocaleString()}`
       );
-      let currentDate = setHours(
-        setMinutes(setSeconds(new Date(input?.start?.toISOString()), 0), 0),
-        0
-      );
+      if (input?.start?.toISOString()) {
+        let currentDate = new Date(input.start.toISOString());
 
-      log.debug(
-        `CurrentDate: ISO: ${currentDate?.toISOString()} - DateString: ${currentDate?.toDateString()} - LocaleString: ${currentDate?.toLocaleString()}`
-      );
-      while (currentDate <= input.end) {
-        if (!freetymeEventList.has(currentDate)) {
-          freetymeEventList.set(currentDate, []);
-        }
         log.debug(
-          `Gathering freetyme for current date: ${currentDate?.toISOString()}`
+          `CurrentDate: ISO: ${currentDate?.toISOString()} - DateString: ${currentDate?.toDateString()} - LocaleString: ${currentDate?.toLocaleString()}`
         );
-        const currentDayFreetymeArray = freetymeEventList.get(currentDate);
-        const currentDayEvents = userEventsInDuration?.length
-          ? userEventsInDuration.filter(
-              (userEvent) =>
-                isSameDay(userEvent.event.start, currentDate) ||
-                isSameDay(userEvent.event.end, currentDate)
-            )
-          : [];
-        const currentDayRecurringEvents = userRecurringEventsInDuration?.length
-          ? userRecurringEventsInDuration.filter((userRecurringEvent) => {
-              return isRecurringEventOnDay(userRecurringEvent, currentDate);
-            })
-          : [];
-
-        let currentHour = 1;
-        let freetymeEventStartHour: number | null = null;
-        let freetymeEventEndHour: number | null = null;
-        while (currentHour < 24) {
-          const currentDayEvent = currentDayEvents.find((userEvent) => {
-            return (
-              userEvent.event.start.getHours() <= currentHour &&
-              (userEvent.event.end.getHours() > currentHour ||
-                (userEvent.event.end.getHours() === currentHour &&
-                  userEvent.event.end.getMinutes() > 0))
-            );
-          });
-          const currentDayRecurringEvent = currentDayRecurringEvents.find(
-            (userRecurringEvent) => {
-              return (
-                userRecurringEvent.startHour <= currentHour &&
-                (userRecurringEvent.endHour > currentHour ||
-                  (userRecurringEvent.endHour === currentHour &&
-                    userRecurringEvent.endMin > 0))
-              );
-            }
+        while (currentDate <= input.end) {
+          if (!freetymeEventList.has(currentDate)) {
+            freetymeEventList.set(currentDate, []);
+          }
+          log.debug(
+            `Gathering freetyme for current date: ${currentDate?.toISOString()}`
           );
-          if (!currentDayEvent && !currentDayRecurringEvent) {
-            if (freetymeEventStartHour === null) {
-              freetymeEventStartHour = currentHour;
-              log.debug(
-                `${currentDate?.toISOString()} - Freetyme Start: ${freetymeEventStartHour}`
+          const currentDayFreetymeArray = freetymeEventList.get(currentDate);
+          const currentDayEvents = userEventsInDuration?.length
+            ? userEventsInDuration.filter(
+                (userEvent) =>
+                  isSameDay(userEvent.event.start, currentDate) ||
+                  isSameDay(userEvent.event.end, currentDate)
+              )
+            : [];
+          const currentDayRecurringEvents =
+            userRecurringEventsInDuration?.length
+              ? userRecurringEventsInDuration.filter((userRecurringEvent) => {
+                  return isRecurringEventOnDay(userRecurringEvent, currentDate);
+                })
+              : [];
+
+          let currentHour = 1;
+          let freetymeEventStartHour: number | null = null;
+          let freetymeEventEndHour: number | null = null;
+          while (currentHour < 24) {
+            const currentDayEvent = currentDayEvents.find((userEvent) => {
+              return (
+                userEvent.event.start.getHours() <= currentHour &&
+                (userEvent.event.end.getHours() > currentHour ||
+                  (userEvent.event.end.getHours() === currentHour &&
+                    userEvent.event.end.getMinutes() > 0))
               );
+            });
+            const currentDayRecurringEvent = currentDayRecurringEvents.find(
+              (userRecurringEvent) => {
+                return (
+                  userRecurringEvent.startHour <= currentHour &&
+                  (userRecurringEvent.endHour > currentHour ||
+                    (userRecurringEvent.endHour === currentHour &&
+                      userRecurringEvent.endMin > 0))
+                );
+              }
+            );
+            if (!currentDayEvent && !currentDayRecurringEvent) {
+              if (freetymeEventStartHour === null) {
+                freetymeEventStartHour = currentHour;
+                log.debug(
+                  `${currentDate?.toISOString()} - Freetyme Start: ${freetymeEventStartHour}`
+                );
+              }
+              freetymeEventEndHour = currentHour + 1;
+            } else if (
+              freetymeEventStartHour !== null &&
+              freetymeEventEndHour !== null &&
+              freetymeEventEndHour > freetymeEventStartHour
+            ) {
+              log.debug(
+                `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
+              );
+              const start = setHours(
+                new Date(currentDate),
+                freetymeEventStartHour
+              );
+              const end = setHours(new Date(currentDate), freetymeEventEndHour);
+
+              log.debug(
+                `${currentDate?.toISOString()} - Freetyme Event Found: Start: ${format(
+                  start,
+                  "yyyy-MM-dd HH:mm:ss"
+                )} - End:${format(end, "yyyy-MM-dd HH:mm:ss")})}`
+              );
+
+              currentDayFreetymeArray?.push({
+                id: start.getMilliseconds(),
+                title: "Freetyme",
+                description: "Freetyme",
+                start: start,
+                end: end,
+                color: "#000000",
+                textColor: "#ffffff",
+                location: "",
+                image: "",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                typeId: 1,
+                ownerId: 1,
+              });
+              freetymeEventStartHour = null;
+              freetymeEventEndHour = null;
             }
-            freetymeEventEndHour = currentHour + 1;
-          } else if (
+            currentHour++;
+          }
+
+          if (
             freetymeEventStartHour !== null &&
             freetymeEventEndHour !== null &&
             freetymeEventEndHour > freetymeEventStartHour
@@ -131,7 +164,7 @@ export const freetymeRouter = createTRPCRouter({
             const end = setHours(new Date(currentDate), freetymeEventEndHour);
 
             log.debug(
-              `${currentDate?.toISOString()} - Freetyme Event Found: Start: ${format(
+              `${currentDate?.toISOString()} - Freetyme Event After 24 Hours Found: Start: ${format(
                 start,
                 "yyyy-MM-dd HH:mm:ss"
               )} - End:${format(end, "yyyy-MM-dd HH:mm:ss")})}`
@@ -155,50 +188,11 @@ export const freetymeRouter = createTRPCRouter({
             freetymeEventStartHour = null;
             freetymeEventEndHour = null;
           }
-          currentHour++;
+
+          currentDate = addDays(currentDate, 1);
         }
-
-        if (
-          freetymeEventStartHour !== null &&
-          freetymeEventEndHour !== null &&
-          freetymeEventEndHour > freetymeEventStartHour
-        ) {
-          log.debug(
-            `${currentDate?.toISOString()} - Freetyme End: ${freetymeEventEndHour}`
-          );
-          const start = setHours(new Date(currentDate), freetymeEventStartHour);
-          const end = setHours(new Date(currentDate), freetymeEventEndHour);
-
-          log.debug(
-            `${currentDate?.toISOString()} - Freetyme Event After 24 Hours Found: Start: ${format(
-              start,
-              "yyyy-MM-dd HH:mm:ss"
-            )} - End:${format(end, "yyyy-MM-dd HH:mm:ss")})}`
-          );
-
-          currentDayFreetymeArray?.push({
-            id: start.getMilliseconds(),
-            title: "Freetyme",
-            description: "Freetyme",
-            start: start,
-            end: end,
-            color: "#000000",
-            textColor: "#ffffff",
-            location: "",
-            image: "",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            typeId: 1,
-            ownerId: 1,
-          });
-          freetymeEventStartHour = null;
-          freetymeEventEndHour = null;
-        }
-
-        currentDate = addDays(currentDate, 1);
+        log.debug("Freetyme List:", { freetymeEventList: freetymeEventList });
       }
-      log.debug("Freetyme List:", { freetymeEventList: freetymeEventList });
-
       return freetymeEventList;
     }),
 });
