@@ -3,6 +3,7 @@ import Calendar from "~/components/calendar";
 import FreeTyme from "~/components/freetyme";
 
 export const HomeTabs = () => {
+  const today = new Date();
   return (
     <Tabs defaultValue="freetyme" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
@@ -11,7 +12,7 @@ export const HomeTabs = () => {
       </TabsList>
       <TabsContent value="freetyme">
         <div className={"px-3"}>
-          <FreeTyme />
+          <FreeTyme today={today} />
         </div>
       </TabsContent>
       <TabsContent value="schedule">

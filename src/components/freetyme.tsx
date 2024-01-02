@@ -7,8 +7,7 @@ import { Spinner } from "@nextui-org/react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Calendar, Clock, Terminal } from "lucide-react";
 
-export const FreeTyme = () => {
-  const today = startOfToday();
+export const FreeTyme = ({ today }: { today: Date }) => {
   const nextWeek = addWeeks(today, 2);
 
   const { user, isSignedIn, isLoaded } = useUser();
