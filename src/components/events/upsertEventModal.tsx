@@ -21,22 +21,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { Textarea } from "~/components/ui/textarea";
 import { ColorPicker } from "~/components/ui/color-picker";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 import { Button } from "~/components/ui/button";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "~/components/ui/calendar";
-import { type DateRange } from "react-day-picker";
-import { cn } from "~/utils/util";
 
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
@@ -104,6 +93,8 @@ export const UpsertEventModal = ({
   const { mutateAsync: userEventDeleteMutation } =
     api.event.deleteEvent.useMutation();
 
+  const { RangePicker } = DatePicker;
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -122,6 +113,7 @@ export const UpsertEventModal = ({
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log(`SAVE EVENT`, data);
     if (
       data.title &&
       data.color &&
@@ -152,7 +144,24 @@ export const UpsertEventModal = ({
         })
         .catch((e) => {
           console.error(e);
+          toast({
+            title: "Error saving event",
+            description: (
+              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                <code className="text-white">{JSON.stringify(e, null, 2)}</code>
+              </pre>
+            ),
+          });
         });
+    } else {
+      toast({
+        title: "Please fill out all required fields",
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          </pre>
+        ),
+      });
     }
 
     toast({
@@ -193,7 +202,16 @@ export const UpsertEventModal = ({
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-tertiary/50 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
                 <Form {...form}>
-                  <form onSubmit={void form.handleSubmit(onSubmit)}>
+                  <form
+                    onSubmit={(event) => {
+                      console.log(`SUBMIT`);
+                      event.preventDefault();
+                      console.log(`HANDLE SUBMIT`);
+                      void form.handleSubmit(onSubmit, (e) => {
+                        console.log(`ERROR`, e);
+                      })(event);
+                    }}
+                  >
                     <div>
                       <div className="mx-auto max-w-md sm:max-w-3xl">
                         <div className="text-secondary">
@@ -220,14 +238,8 @@ export const UpsertEventModal = ({
                                 </h2>
                               </div>
 
-                              <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-6 md:col-span-2">
+                              <div className="mt-6 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-2 px-3 sm:grid-cols-6 md:col-span-2">
                                 <div className="sm:col-span-3">
-                                  <label
-                                    htmlFor="duration"
-                                    className="mb-2 block text-sm font-medium text-secondary"
-                                  >
-                                    Select Event Duration
-                                  </label>
                                   <FormField
                                     name="duration"
                                     control={form.control}
@@ -238,60 +250,32 @@ export const UpsertEventModal = ({
                                             "mb-2 block text-sm font-medium capitalize text-secondary"
                                           }
                                         >
-                                          {field.name}
+                                          Select Event Duration
                                         </FormLabel>
-                                        <Popover>
-                                          <PopoverTrigger asChild>
-                                            <Button
-                                              id="date"
-                                              variant={"outline"}
-                                              className={cn(
-                                                "w-[300px] justify-start text-left font-normal",
-                                                !field.value &&
-                                                  "text-muted-foreground"
-                                              )}
-                                            >
-                                              <CalendarIcon className="mr-2 h-4 w-4" />
-                                              {field.value?.from ? (
-                                                field.value.to ? (
-                                                  <>
-                                                    {format(
-                                                      field.value.from,
-                                                      "LLL dd, y"
-                                                    )}{" "}
-                                                    -{" "}
-                                                    {format(
-                                                      field.value.to,
-                                                      "LLL dd, y"
-                                                    )}
-                                                  </>
-                                                ) : (
-                                                  format(
-                                                    field.value.from,
-                                                    "LLL dd, y"
-                                                  )
+                                        <RangePicker
+                                          showTime
+                                          use12Hours
+                                          format={"YYYY-MM-DD hh:mm A"}
+                                          className="mb-1"
+                                          value={[
+                                            field.value?.from
+                                              ? dayjs(
+                                                  new Date(field.value?.from)
                                                 )
-                                              ) : (
-                                                <span>Pick a date</span>
-                                              )}
-                                            </Button>
-                                          </PopoverTrigger>
-                                          <PopoverContent
-                                            className="w-auto p-0"
-                                            align="start"
-                                          >
-                                            <Calendar
-                                              initialFocus
-                                              mode="range"
-                                              defaultMonth={field.value?.from}
-                                              selected={field.value}
-                                              onSelect={(date) => {
-                                                field.onChange(date);
-                                              }}
-                                              numberOfMonths={2}
-                                            />
-                                          </PopoverContent>
-                                        </Popover>
+                                              : null,
+                                            field.value?.to
+                                              ? dayjs(new Date(field.value?.to))
+                                              : null,
+                                          ]}
+                                          onChange={(value) => {
+                                            if (value?.[0] && value?.[1]) {
+                                              field.onChange({
+                                                from: value?.[0]?.toDate(),
+                                                to: value?.[1]?.toDate(),
+                                              });
+                                            }
+                                          }}
+                                        />
                                         <FormDescription></FormDescription>
                                         <FormMessage />
                                       </FormItem>
@@ -360,7 +344,7 @@ export const UpsertEventModal = ({
                                         <FormItem>
                                           <FormLabel
                                             className={
-                                              "ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                              "block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
                                             }
                                           >
                                             Background Color
@@ -387,7 +371,7 @@ export const UpsertEventModal = ({
                                         <FormItem>
                                           <FormLabel
                                             className={
-                                              "ml-2 block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
+                                              "block whitespace-nowrap text-sm font-medium leading-6 text-secondary"
                                             }
                                           >
                                             Text Color
@@ -415,15 +399,15 @@ export const UpsertEventModal = ({
                     </div>
                     <div className="mt-5 flex items-center sm:mt-6">
                       <div className="flex flex-grow items-center justify-between gap-x-4">
-                        <button
+                        <Button
                           type="button"
                           className="inline-flex w-24 justify-center rounded-md border border-secondary px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-secondary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
                           onClick={() => setOpen(false)}
                         >
                           Back
-                        </button>
+                        </Button>
                         {existingEvent?.id && (
-                          <button
+                          <Button
                             type="button"
                             className="ml-auto mr-4 inline-flex w-24 justify-center rounded-md border border-destructive bg-destructive px-3 py-2 text-sm font-semibold text-secondary shadow-sm transition-all duration-300 hover:bg-destructive/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
                             onClick={() => {
@@ -443,14 +427,14 @@ export const UpsertEventModal = ({
                             }}
                           >
                             Delete
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
                           type="submit"
                           className="inline-flex w-24 justify-center rounded-md border border-secondary bg-secondary px-3 py-2 text-sm font-semibold text-tertiary shadow-sm transition-all duration-300 hover:bg-transparent hover:text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary"
                         >
                           Save
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </form>

@@ -81,11 +81,11 @@
 }
 
 .ant-picker {
-  @apply border-none bg-transparent p-0 text-3xl !text-secondary !placeholder-secondary ring-0;
+  @apply border-none bg-transparent p-0 text-lg !text-secondary !placeholder-secondary ring-0;
 }
 .ant-picker-input > input,
 .ant-picker-input > span {
-  @apply !w-[136px] !text-2xl !text-secondary !placeholder-secondary;
+  @apply !w-[136px] !text-lg !text-secondary !placeholder-secondary;
 }
 .ant-picker.ant-picker-range.ant-picker-status-error {
   @apply !bg-transparent;
@@ -114,6 +114,16 @@
 
 .ant-picker-range > .ant-picker-input > input {
   @apply !w-[291px] font-bold;
+}
+.ant-picker-panels .ant-picker-content .ant-picker-cell-selected .ant-picker-cell-inner {
+  @apply !bg-primary;
+}
+.ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+  @apply !border-primary;
+}
+
+.ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner, .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner, .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+    @apply !bg-primary;
 }
 
 .ant-picker-ranges {
