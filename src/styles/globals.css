@@ -85,7 +85,7 @@
 }
 .ant-picker-input > input,
 .ant-picker-input > span {
-  @apply !w-[136px] !text-lg !text-secondary !placeholder-secondary;
+  @apply !w-[80px] !text-lg !text-secondary !placeholder-secondary;
 }
 .ant-picker.ant-picker-range.ant-picker-status-error {
   @apply !bg-transparent;
