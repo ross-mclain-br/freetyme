@@ -1,6 +1,7 @@
 import { PlusIcon } from "@heroicons/react/20/solid";
-import { Fragment, SetStateAction, Dispatch } from "react";
+import { Fragment, type SetStateAction, type Dispatch } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import Image from "next/image";
 
 const people = [
   {
@@ -137,7 +138,7 @@ export const ManageGroupsModal = ({
                         role="list"
                         className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2"
                       >
-                        {people.map((person, personIdx) => (
+                        {people.map((person) => (
                           <li key="{personIdx}">
                             <button
                               type="button"
@@ -145,7 +146,7 @@ export const ManageGroupsModal = ({
                             >
                               <span className="flex min-w-0 flex-1 items-center space-x-3">
                                 <span className="block flex-shrink-0">
-                                  <img
+                                  <Image
                                     className="h-10 w-10 rounded-md"
                                     src={person.imageUrl}
                                     alt=""

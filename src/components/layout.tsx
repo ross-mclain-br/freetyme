@@ -2,7 +2,6 @@ import Head from "next/head";
 import Navbar from "./navbar";
 import Footer from "./footer";
 import type { ReactElement } from "react";
-import { useUser } from "@clerk/nextjs";
 
 export const Layout = ({ children }: { children: ReactElement }) => {
   return (

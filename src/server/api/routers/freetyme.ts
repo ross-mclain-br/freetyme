@@ -1,7 +1,6 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
-import { Event } from "@prisma/client";
+import { type Event } from "@prisma/client";
 import { addDays, addHours, format, isSameDay } from "date-fns";
 import { isRecurringEventOnDay } from "~/server/utils";
 import { log } from "next-axiom";
