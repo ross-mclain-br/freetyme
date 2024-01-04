@@ -18,7 +18,7 @@ function classNames(...classes: string[]) {
 }
 
 export const Calendar = () => {
-  const { user, isSignedIn, isLoaded } = useUser();
+  const { user } = useUser();
 
   const { data: userData, isLoading: userLoading } =
     api.user.getUserByExternalId.useQuery(
@@ -30,17 +30,16 @@ export const Calendar = () => {
       }
     );
 
-  const { data: eventsData, isLoading: eventsLoading } =
-    api.event.getEventsByUserId.useQuery(
-      {
-        userId: userData?.id ?? 0,
-      },
-      {
-        enabled: !!userData?.id,
-      }
-    );
+  const { data: eventsData } = api.event.getEventsByUserId.useQuery(
+    {
+      userId: userData?.id ?? 0,
+    },
+    {
+      enabled: !!userData?.id,
+    }
+  );
 
-  const { data: recurringEventsData, isLoading: reccuringEventsLoading } =
+  const { data: recurringEventsData } =
     api.recurringEvent.getRecurringEventsByUserId.useQuery(
       {
         userId: userData?.id ?? 0,
@@ -58,9 +57,9 @@ export const Calendar = () => {
     useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [selectedWeek, setSelectedWeek] = useState<Date>(startOfWeek(today));
-  const [selectedCalendarView, setSelectedCalendarView] = useState<
-    "day" | "week" | "month" | "year"
-  >("week");
+  const [selectedCalendarView] = useState<"day" | "week" | "month" | "year">(
+    "week"
+  );
   const lastCallback = useCallback(() => {
     switch (selectedCalendarView) {
       case "day":

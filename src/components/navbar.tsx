@@ -1,17 +1,12 @@
-import { Fragment } from "react";
 import { Disclosure } from "@headlessui/react";
-import { Bars3Icon, ClockIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
-const classNames = (...classes: string[]) => {
-  return classes.filter(Boolean).join(" ");
-};
-
 export const Navbar = () => {
   const pageName = useRouter().pathname?.toLowerCase();
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
   return (
     <Disclosure as="nav" className={`bg-tertiary shadow `}>
       {({ open }) => (

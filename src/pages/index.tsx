@@ -1,4 +1,3 @@
-import Calendar from "~/components/calendar";
 import HomeTabs from "~/components/homeTabs";
 
 export default function Home() {

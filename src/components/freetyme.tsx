@@ -1,5 +1,3 @@
-import { Fragment } from "react";
-
 import { format, addWeeks, isToday, isTomorrow } from "date-fns";
 import { api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
@@ -10,7 +8,7 @@ import { Calendar, Clock } from "lucide-react";
 export const FreeTyme = ({ today }: { today: Date }) => {
   const nextWeek = addWeeks(today, 2);
 
-  const { user, isSignedIn, isLoaded } = useUser();
+  const { user } = useUser();
 
   const { data: userData } = api.user.getUserByExternalId.useQuery(
     {

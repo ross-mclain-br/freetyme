@@ -1,4 +1,4 @@
-import { RouterOutputs } from "./api";
+import { type RouterOutputs } from "./api";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 export const capitalize = (value: string) => {

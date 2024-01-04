@@ -1,4 +1,4 @@
-import { Fragment, type SetStateAction, type Dispatch, useState } from "react";
+import { Fragment, type SetStateAction, type Dispatch } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
 import { api, type RouterOutputs } from "~/utils/api";
@@ -44,13 +44,11 @@ const formSchema = z.object({
 export const UpsertEventModal = ({
   open,
   setOpen,
-  selectedDay,
   existingEvent,
   setExistingEvent,
 }: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  selectedDay?: Date;
   existingEvent?: RouterOutputs["event"]["getEventsByUserId"][0]["event"];
   setExistingEvent?: Dispatch<
     SetStateAction<
@@ -71,15 +69,14 @@ export const UpsertEventModal = ({
 
   const { data: eventTypesData } = api.eventType.getEventTypes.useQuery();
 
-  const { data: eventData, refetch: eventDataRefetch } =
-    api.event.getEventsByUserId.useQuery(
-      {
-        userId: userData?.id ?? 0,
-      },
-      {
-        enabled: !!userData?.id,
-      }
-    );
+  const { refetch: eventDataRefetch } = api.event.getEventsByUserId.useQuery(
+    {
+      userId: userData?.id ?? 0,
+    },
+    {
+      enabled: !!userData?.id,
+    }
+  );
 
   const eventType = eventTypesData?.find((type) =>
     existingEvent?.typeId
