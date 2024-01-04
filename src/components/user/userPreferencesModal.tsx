@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { Fragment } from "react";
 import type { SetStateAction, Dispatch } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 
@@ -7,6 +7,19 @@ import { api } from "~/utils/api";
 import { parseRecurringEventDuration } from "~/utils/util";
 import { TimePicker } from "antd";
 import dayjs from "dayjs";
+import * as z from "zod";
+import { Form } from "../ui/form";
+
+const formSchema = z.object({
+  sleepDuration: z.object({
+    from: z.date(),
+    to: z.date(),
+  }),
+  workDuration: z.object({
+    from: z.date(),
+    to: z.date(),
+  }),
+});
 export const UserPreferencesModal = ({
   open,
   setOpen,
@@ -18,15 +31,6 @@ export const UserPreferencesModal = ({
 
   const { mutateAsync: userRecurringEventMutation } =
     api.recurringEvent.upsertRecurringEvent.useMutation();
-
-  const [editingSleep, setEditingSleep] = useState(false);
-  const [editingWork, setEditingWork] = useState(false);
-
-  const [sleepStart, setSleepStart] = useState<string | undefined>(undefined);
-  const [sleepEnd, setSleepEnd] = useState<string | undefined>(undefined);
-
-  const [workStart, setWorkStart] = useState<string | undefined>(undefined);
-  const [workEnd, setWorkEnd] = useState<string | undefined>(undefined);
 
   const { user } = useUser();
 
@@ -106,122 +110,106 @@ export const UserPreferencesModal = ({
                           />
                         </svg>
                       </div>
-                      <form className="text-secondary">
-                        <div className="space-y-12">
-                          <div className=" flex flex-col items-center gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 ">
-                            <div className="px-3">
-                              <div className="flex flex-col gap-y-6">
-                                <div className="flex flex-col">
-                                  <label
-                                    htmlFor="name"
-                                    className="text-sm font-semibold"
-                                  >
-                                    Sleep
-                                  </label>
-                                  <div className="flex items-center gap-x-2 text-3xl font-bold">
-                                    {!editingSleep ? (
-                                      <h3>
-                                        {sleepDuration ?? "00:00 AM - 00:00 PM"}
-                                      </h3>
-                                    ) : (
-                                      <h3 className="flex items-center space-x-2">
-                                        <TimePicker
-                                          name="sleep-start-time"
-                                          use12Hours
-                                          defaultValue={
-                                            sleepData
-                                              ? dayjs(
-                                                  `${String(
-                                                    sleepData.startHour
-                                                  ).padStart(2, "0")}:${String(
-                                                    sleepData.startMin
-                                                  ).padStart(2, "0")} ${
-                                                    sleepData.startHour < 12
-                                                      ? "AM"
-                                                      : "PM"
-                                                  }`,
+                      <Form {...form}>
+                        \
+                        <form className="text-secondary">
+                          <div className="space-y-12">
+                            <div className=" flex flex-col items-center gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 ">
+                              <div className="px-3">
+                                <div className="flex flex-col gap-y-6">
+                                  <div className="flex flex-col">
+                                    <label
+                                      htmlFor="name"
+                                      className="text-sm font-semibold"
+                                    >
+                                      Sleep
+                                    </label>
+                                    <div className="flex items-center gap-x-2 text-3xl font-bold">
+                                      {!editingSleep ? (
+                                        <h3>
+                                          {sleepDuration ??
+                                            "00:00 AM - 00:00 PM"}
+                                        </h3>
+                                      ) : (
+                                        <h3 className="flex items-center space-x-2">
+                                          <TimePicker
+                                            name="sleep-start-time"
+                                            use12Hours
+                                            defaultValue={
+                                              sleepData
+                                                ? dayjs(
+                                                    `${String(
+                                                      sleepData.startHour
+                                                    ).padStart(
+                                                      2,
+                                                      "0"
+                                                    )}:${String(
+                                                      sleepData.startMin
+                                                    ).padStart(2, "0")} ${
+                                                      sleepData.startHour < 12
+                                                        ? "AM"
+                                                        : "PM"
+                                                    }`,
+                                                    "hh:mm A"
+                                                  )
+                                                : undefined
+                                            }
+                                            onChange={(time) => {
+                                              setSleepStart(
+                                                dayjs(time, "hh:mm A").format(
                                                   "hh:mm A"
                                                 )
-                                              : undefined
-                                          }
-                                          onChange={(time) => {
-                                            setSleepStart(
-                                              dayjs(time, "hh:mm A").format(
-                                                "hh:mm A"
-                                              )
-                                            );
-                                          }}
-                                          placeholder="Start"
-                                          format={"hh:mm A"}
-                                          suffixIcon={null}
-                                          allowClear={false}
-                                        />
-                                        <span>-</span>
-                                        <TimePicker
-                                          name="sleep-end-time"
-                                          use12Hours
-                                          format={"hh:mm A"}
-                                          suffixIcon={null}
-                                          allowClear={false}
-                                          onChange={(time) => {
-                                            setSleepEnd(
-                                              dayjs(time, "hh:mm A").format(
-                                                "hh:mm A"
-                                              )
-                                            );
-                                          }}
-                                          placeholder="End"
-                                          defaultValue={
-                                            sleepData
-                                              ? dayjs(
-                                                  `${String(
-                                                    sleepData.endHour
-                                                  ).padStart(2, "0")}:${String(
-                                                    sleepData.endMin
-                                                  ).padStart(2, "0")} ${
-                                                    sleepData.endHour < 12
-                                                      ? "AM"
-                                                      : "PM"
-                                                  }`,
-                                                  "hh:mm A"
-                                                )
-                                              : undefined
-                                          }
-                                        />
-                                      </h3>
-                                    )}
-                                    {!editingSleep ? (
-                                      <div
-                                        className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
-                                        onClick={() => {
-                                          setSleepStart(undefined);
-                                          setSleepEnd(undefined);
-                                          setEditingSleep(true);
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                          strokeWidth={1.5}
-                                          stroke="currentColor"
-                                          className="h-6 w-6"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                              );
+                                            }}
+                                            placeholder="Start"
+                                            format={"hh:mm A"}
+                                            suffixIcon={null}
+                                            allowClear={false}
                                           />
-                                        </svg>
-                                      </div>
-                                    ) : (
-                                      <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
+                                          <span>-</span>
+                                          <TimePicker
+                                            name="sleep-end-time"
+                                            use12Hours
+                                            format={"hh:mm A"}
+                                            suffixIcon={null}
+                                            allowClear={false}
+                                            onChange={(time) => {
+                                              setSleepEnd(
+                                                dayjs(time, "hh:mm A").format(
+                                                  "hh:mm A"
+                                                )
+                                              );
+                                            }}
+                                            placeholder="End"
+                                            defaultValue={
+                                              sleepData
+                                                ? dayjs(
+                                                    `${String(
+                                                      sleepData.endHour
+                                                    ).padStart(
+                                                      2,
+                                                      "0"
+                                                    )}:${String(
+                                                      sleepData.endMin
+                                                    ).padStart(2, "0")} ${
+                                                      sleepData.endHour < 12
+                                                        ? "AM"
+                                                        : "PM"
+                                                    }`,
+                                                    "hh:mm A"
+                                                  )
+                                                : undefined
+                                            }
+                                          />
+                                        </h3>
+                                      )}
+                                      {!editingSleep ? (
                                         <div
-                                          className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                          className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
                                           onClick={() => {
                                             setSleepStart(undefined);
                                             setSleepEnd(undefined);
-                                            setEditingSleep(false);
+                                            setEditingSleep(true);
                                           }}
                                         >
                                           <svg
@@ -230,211 +218,218 @@ export const UserPreferencesModal = ({
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6  group-hover:stroke-red-500"
+                                            className="h-6 w-6"
                                           >
                                             <path
                                               strokeLinecap="round"
                                               strokeLinejoin="round"
-                                              d="M6 18L18 6M6 6l12 12"
+                                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                                             />
                                           </svg>
                                         </div>
-                                        <div
-                                          className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => {
-                                            // mutate
-                                            userRecurringEventMutation({
-                                              id: sleepData?.id ?? null,
-                                              startHour: sleepStart
-                                                ? dayjs(
-                                                    sleepStart,
-                                                    "hh:mm A"
-                                                  ).hour()
-                                                : sleepData?.startHour ?? 0,
-                                              startMin: sleepStart
-                                                ? dayjs(
-                                                    sleepStart,
-                                                    "hh:mm A"
-                                                  ).minute()
-                                                : sleepData?.startMin ?? 0,
-                                              endHour: sleepEnd
-                                                ? dayjs(
-                                                    sleepEnd,
-                                                    "hh:mm A"
-                                                  ).hour()
-                                                : sleepData?.endHour ?? 0,
-                                              endMin: sleepEnd
-                                                ? dayjs(
-                                                    sleepEnd,
-                                                    "hh:mm A"
-                                                  ).minute()
-                                                : sleepData?.endMin ?? 0,
-                                              isOnSunday: true,
-                                              isOnMonday: true,
-                                              isOnTuesday: true,
-                                              isOnWednesday: true,
-                                              isOnThursday: true,
-                                              isOnFriday: true,
-                                              isOnSaturday: true,
-                                              typeId:
-                                                eventTypesData?.find(
-                                                  (type) =>
-                                                    type.code === "sleep"
-                                                )?.id ?? 0,
-                                              userId: userData?.id ?? 0,
-                                              title: "Sleep",
-                                              description: "Sleep",
-                                            })
-                                              .then((res) => {
-                                                console.log(res);
-                                                recurringEventDataRefetch().catch(
-                                                  (err) => {
-                                                    console.log(err);
-                                                  }
-                                                );
+                                      ) : (
+                                        <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
+                                          <div
+                                            className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                            onClick={() => {
+                                              setSleepStart(undefined);
+                                              setSleepEnd(undefined);
+                                              setEditingSleep(false);
+                                            }}
+                                          >
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              fill="none"
+                                              viewBox="0 0 24 24"
+                                              strokeWidth={1.5}
+                                              stroke="currentColor"
+                                              className="h-6 w-6  group-hover:stroke-red-500"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M6 18L18 6M6 6l12 12"
+                                              />
+                                            </svg>
+                                          </div>
+                                          <div
+                                            className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                            onClick={() => {
+                                              // mutate
+                                              userRecurringEventMutation({
+                                                id: sleepData?.id ?? null,
+                                                startHour: sleepStart
+                                                  ? dayjs(
+                                                      sleepStart,
+                                                      "hh:mm A"
+                                                    ).hour()
+                                                  : sleepData?.startHour ?? 0,
+                                                startMin: sleepStart
+                                                  ? dayjs(
+                                                      sleepStart,
+                                                      "hh:mm A"
+                                                    ).minute()
+                                                  : sleepData?.startMin ?? 0,
+                                                endHour: sleepEnd
+                                                  ? dayjs(
+                                                      sleepEnd,
+                                                      "hh:mm A"
+                                                    ).hour()
+                                                  : sleepData?.endHour ?? 0,
+                                                endMin: sleepEnd
+                                                  ? dayjs(
+                                                      sleepEnd,
+                                                      "hh:mm A"
+                                                    ).minute()
+                                                  : sleepData?.endMin ?? 0,
+                                                isOnSunday: true,
+                                                isOnMonday: true,
+                                                isOnTuesday: true,
+                                                isOnWednesday: true,
+                                                isOnThursday: true,
+                                                isOnFriday: true,
+                                                isOnSaturday: true,
+                                                typeId:
+                                                  eventTypesData?.find(
+                                                    (type) =>
+                                                      type.code === "sleep"
+                                                  )?.id ?? 0,
+                                                userId: userData?.id ?? 0,
+                                                title: "Sleep",
+                                                description: "Sleep",
                                               })
-                                              .catch((err) => {
-                                                console.log(err);
-                                              });
-                                            // refetch
+                                                .then((res) => {
+                                                  console.log(res);
+                                                  recurringEventDataRefetch().catch(
+                                                    (err) => {
+                                                      console.log(err);
+                                                    }
+                                                  );
+                                                })
+                                                .catch((err) => {
+                                                  console.log(err);
+                                                });
+                                              // refetch
 
-                                            //hide and reset
-                                            setSleepStart(undefined);
-                                            setSleepEnd(undefined);
-                                            setEditingSleep(false);
-                                          }}
-                                        >
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="h-6 w-6  group-hover:stroke-green-500"
+                                              //hide and reset
+                                              setSleepStart(undefined);
+                                              setSleepEnd(undefined);
+                                              setEditingSleep(false);
+                                            }}
                                           >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              d="M4.5 12.75l6 6 9-13.5"
-                                            />
-                                          </svg>
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              fill="none"
+                                              viewBox="0 0 24 24"
+                                              strokeWidth={1.5}
+                                              stroke="currentColor"
+                                              className="h-6 w-6  group-hover:stroke-green-500"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M4.5 12.75l6 6 9-13.5"
+                                              />
+                                            </svg>
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="flex flex-col">
-                                  <label
-                                    htmlFor="name"
-                                    className="text-sm font-semibold"
-                                  >
-                                    Work
-                                  </label>
-                                  <div className="flex items-center gap-x-2 text-3xl font-bold">
-                                    {!editingWork ? (
-                                      <h3>
-                                        {workDuration ?? "00:00 AM - 00:00 PM"}
-                                      </h3>
-                                    ) : (
-                                      <h3 className="flex items-center space-x-2">
-                                        <TimePicker
-                                          name="work-start-time"
-                                          use12Hours
-                                          defaultValue={
-                                            workData
-                                              ? dayjs(
-                                                  `${String(
-                                                    workData.startHour
-                                                  ).padStart(2, "0")}:${String(
-                                                    workData.startMin
-                                                  ).padStart(2, "0")} ${
-                                                    workData.startHour < 12
-                                                      ? "AM"
-                                                      : "PM"
-                                                  }`,
+                                  <div className="flex flex-col">
+                                    <label
+                                      htmlFor="name"
+                                      className="text-sm font-semibold"
+                                    >
+                                      Work
+                                    </label>
+                                    <div className="flex items-center gap-x-2 text-3xl font-bold">
+                                      {!editingWork ? (
+                                        <h3>
+                                          {workDuration ??
+                                            "00:00 AM - 00:00 PM"}
+                                        </h3>
+                                      ) : (
+                                        <h3 className="flex items-center space-x-2">
+                                          <TimePicker
+                                            name="work-start-time"
+                                            use12Hours
+                                            defaultValue={
+                                              workData
+                                                ? dayjs(
+                                                    `${String(
+                                                      workData.startHour
+                                                    ).padStart(
+                                                      2,
+                                                      "0"
+                                                    )}:${String(
+                                                      workData.startMin
+                                                    ).padStart(2, "0")} ${
+                                                      workData.startHour < 12
+                                                        ? "AM"
+                                                        : "PM"
+                                                    }`,
+                                                    "hh:mm A"
+                                                  )
+                                                : undefined
+                                            }
+                                            onChange={(time) => {
+                                              setWorkStart(
+                                                dayjs(time, "hh:mm A").format(
                                                   "hh:mm A"
                                                 )
-                                              : undefined
-                                          }
-                                          onChange={(time) => {
-                                            setWorkStart(
-                                              dayjs(time, "hh:mm A").format(
-                                                "hh:mm A"
-                                              )
-                                            );
-                                          }}
-                                          placeholder="Start"
-                                          format={"hh:mm A"}
-                                          suffixIcon={null}
-                                          allowClear={false}
-                                        />
-                                        <span>-</span>
-                                        <TimePicker
-                                          name="work-end-time"
-                                          use12Hours
-                                          format={"hh:mm A"}
-                                          suffixIcon={null}
-                                          allowClear={false}
-                                          onChange={(time) => {
-                                            setWorkEnd(
-                                              dayjs(time, "hh:mm A").format(
-                                                "hh:mm A"
-                                              )
-                                            );
-                                          }}
-                                          placeholder="End"
-                                          defaultValue={
-                                            workData
-                                              ? dayjs(
-                                                  `${String(
-                                                    workData.endHour
-                                                  ).padStart(2, "0")}:${String(
-                                                    workData.endMin
-                                                  ).padStart(2, "0")} ${
-                                                    workData.endHour < 12
-                                                      ? "AM"
-                                                      : "PM"
-                                                  }`,
-                                                  "hh:mm A"
-                                                )
-                                              : undefined
-                                          }
-                                        />
-                                      </h3>
-                                    )}
-
-                                    {!editingWork ? (
-                                      <div
-                                        className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
-                                        onClick={() => {
-                                          setWorkStart(undefined);
-                                          setWorkEnd(undefined);
-                                          setEditingWork(true);
-                                        }}
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          fill="none"
-                                          viewBox="0 0 24 24"
-                                          strokeWidth={1.5}
-                                          stroke="currentColor"
-                                          className="h-6 w-6"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                                              );
+                                            }}
+                                            placeholder="Start"
+                                            format={"hh:mm A"}
+                                            suffixIcon={null}
+                                            allowClear={false}
                                           />
-                                        </svg>
-                                      </div>
-                                    ) : (
-                                      <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
+                                          <span>-</span>
+                                          <TimePicker
+                                            name="work-end-time"
+                                            use12Hours
+                                            format={"hh:mm A"}
+                                            suffixIcon={null}
+                                            allowClear={false}
+                                            onChange={(time) => {
+                                              setWorkEnd(
+                                                dayjs(time, "hh:mm A").format(
+                                                  "hh:mm A"
+                                                )
+                                              );
+                                            }}
+                                            placeholder="End"
+                                            defaultValue={
+                                              workData
+                                                ? dayjs(
+                                                    `${String(
+                                                      workData.endHour
+                                                    ).padStart(
+                                                      2,
+                                                      "0"
+                                                    )}:${String(
+                                                      workData.endMin
+                                                    ).padStart(2, "0")} ${
+                                                      workData.endHour < 12
+                                                        ? "AM"
+                                                        : "PM"
+                                                    }`,
+                                                    "hh:mm A"
+                                                  )
+                                                : undefined
+                                            }
+                                          />
+                                        </h3>
+                                      )}
+
+                                      {!editingWork ? (
                                         <div
-                                          className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                          className="ml-3 cursor-pointer rounded-full p-1  transition-all duration-300 hover:bg-secondary hover:text-primary"
                                           onClick={() => {
                                             setWorkStart(undefined);
                                             setWorkEnd(undefined);
-                                            setEditingWork(false);
+                                            setEditingWork(true);
                                           }}
                                         >
                                           <svg
@@ -443,101 +438,128 @@ export const UserPreferencesModal = ({
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6  group-hover:stroke-red-500"
+                                            className="h-6 w-6"
                                           >
                                             <path
                                               strokeLinecap="round"
                                               strokeLinejoin="round"
-                                              d="M6 18L18 6M6 6l12 12"
+                                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                                             />
                                           </svg>
                                         </div>
-                                        <div
-                                          className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
-                                          onClick={() => {
-                                            //mutate
-                                            userRecurringEventMutation({
-                                              id: workData?.id ?? null,
-                                              startHour: workStart
-                                                ? dayjs(
-                                                    workStart,
-                                                    "hh:mm A"
-                                                  ).hour()
-                                                : workData?.startHour ?? 0,
-                                              startMin: workStart
-                                                ? dayjs(
-                                                    workStart,
-                                                    "hh:mm A"
-                                                  ).minute()
-                                                : workData?.startMin ?? 0,
-                                              endHour: workEnd
-                                                ? dayjs(
-                                                    workEnd,
-                                                    "hh:mm A"
-                                                  ).hour()
-                                                : workData?.endHour ?? 0,
-                                              endMin: workEnd
-                                                ? dayjs(
-                                                    workEnd,
-                                                    "hh:mm A"
-                                                  ).minute()
-                                                : workData?.endMin ?? 0,
-                                              isOnSunday: false,
-                                              isOnMonday: true,
-                                              isOnTuesday: true,
-                                              isOnWednesday: true,
-                                              isOnThursday: true,
-                                              isOnFriday: true,
-                                              isOnSaturday: false,
-                                              typeId:
-                                                eventTypesData?.find(
-                                                  (type) => type.code === "work"
-                                                )?.id ?? 0,
-                                              userId: userData?.id ?? 0,
-                                              title: "Work",
-                                              description: "Work",
-                                            })
-                                              .then((res) => {
-                                                console.log(res);
-                                                recurringEventDataRefetch().catch(
-                                                  (err) => {
-                                                    console.log(err);
-                                                  }
-                                                );
+                                      ) : (
+                                        <div className="ml-3 flex cursor-pointer items-center space-x-2 rounded-full transition-all duration-300">
+                                          <div
+                                            className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                            onClick={() => {
+                                              setWorkStart(undefined);
+                                              setWorkEnd(undefined);
+                                              setEditingWork(false);
+                                            }}
+                                          >
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              fill="none"
+                                              viewBox="0 0 24 24"
+                                              strokeWidth={1.5}
+                                              stroke="currentColor"
+                                              className="h-6 w-6  group-hover:stroke-red-500"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M6 18L18 6M6 6l12 12"
+                                              />
+                                            </svg>
+                                          </div>
+                                          <div
+                                            className="group rounded-full p-1 transition-all duration-300 hover:bg-secondary"
+                                            onClick={() => {
+                                              //mutate
+                                              userRecurringEventMutation({
+                                                id: workData?.id ?? null,
+                                                startHour: workStart
+                                                  ? dayjs(
+                                                      workStart,
+                                                      "hh:mm A"
+                                                    ).hour()
+                                                  : workData?.startHour ?? 0,
+                                                startMin: workStart
+                                                  ? dayjs(
+                                                      workStart,
+                                                      "hh:mm A"
+                                                    ).minute()
+                                                  : workData?.startMin ?? 0,
+                                                endHour: workEnd
+                                                  ? dayjs(
+                                                      workEnd,
+                                                      "hh:mm A"
+                                                    ).hour()
+                                                  : workData?.endHour ?? 0,
+                                                endMin: workEnd
+                                                  ? dayjs(
+                                                      workEnd,
+                                                      "hh:mm A"
+                                                    ).minute()
+                                                  : workData?.endMin ?? 0,
+                                                isOnSunday: false,
+                                                isOnMonday: true,
+                                                isOnTuesday: true,
+                                                isOnWednesday: true,
+                                                isOnThursday: true,
+                                                isOnFriday: true,
+                                                isOnSaturday: false,
+                                                typeId:
+                                                  eventTypesData?.find(
+                                                    (type) =>
+                                                      type.code === "work"
+                                                  )?.id ?? 0,
+                                                userId: userData?.id ?? 0,
+                                                title: "Work",
+                                                description: "Work",
                                               })
-                                              .catch((err) => {
-                                                console.log(err);
-                                              });
-                                            //close editing
-                                            setWorkStart(undefined);
-                                            setWorkEnd(undefined);
-                                            setEditingWork(false);
-                                          }}
-                                        >
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="h-6 w-6  group-hover:stroke-green-500"
+                                                .then((res) => {
+                                                  console.log(res);
+                                                  recurringEventDataRefetch().catch(
+                                                    (err) => {
+                                                      console.log(err);
+                                                    }
+                                                  );
+                                                })
+                                                .catch((err) => {
+                                                  console.log(err);
+                                                });
+                                              //close editing
+                                              setWorkStart(undefined);
+                                              setWorkEnd(undefined);
+                                              setEditingWork(false);
+                                            }}
                                           >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              d="M4.5 12.75l6 6 9-13.5"
-                                            />
-                                          </svg>
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              fill="none"
+                                              viewBox="0 0 24 24"
+                                              strokeWidth={1.5}
+                                              stroke="currentColor"
+                                              className="h-6 w-6  group-hover:stroke-green-500"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M4.5 12.75l6 6 9-13.5"
+                                              />
+                                            </svg>
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </form>
+                        </form>
+                      </Form>
                     </div>
                   </div>
                 </div>
